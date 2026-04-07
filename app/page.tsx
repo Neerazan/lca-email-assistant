@@ -1,28 +1,7 @@
-"use client";
-
-import { useAuth } from "@/components/AuthProvider";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { signIn } from "@/auth";
 import Image from "next/image";
 
 export default function LandingPage() {
-  const { user, loading, signInWithGoogle } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (user && !loading) {
-      router.push("/chat");
-    }
-  }, [user, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a]">
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#0a0e1a] text-slate-200 flex flex-col items-center justify-center relative overflow-hidden">
       {/* Animated Orbs Background */}
@@ -56,9 +35,15 @@ export default function LandingPage() {
           A portfolio demonstration of an AI agent designed to read, summarize, structure, and draft replies to your emails natively using LangGraph.
         </p>
 
-        <div className="pt-8 w-full max-w-sm">
+        <form 
+          className="pt-8 w-full max-w-sm"
+          action={async () => {
+            "use server";
+            await signIn("google", { redirectTo: "/chat" });
+          }}
+        >
           <button
-            onClick={signInWithGoogle}
+            type="submit"
             className="group relative flex w-full items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-all overflow-hidden cursor-pointer"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -74,7 +59,7 @@ export default function LandingPage() {
           <p className="mt-4 text-xs text-slate-500">
             For demonstration purposes. Requires granting basic read/send access.
           </p>
-        </div>
+        </form>
       </main>
     </div>
   );

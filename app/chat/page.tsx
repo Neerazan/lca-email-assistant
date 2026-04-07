@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthProvider";
 import ChatHeader from "@/components/ChatHeader";
 import ChatSidebar, { ChatSession } from "@/components/ChatSidebar";
 import ChatWindow from "@/components/ChatWindow";
 import { Message, EmailDraft } from "@/components/MessageBubble";
 
 export default function ChatPage() {
-  const { user, session: authSession, loading } = useAuth();
+  const { data: session, status } = useSession();
+  const loading = status === "loading";
+  const user = session?.user;
+  const authSession = session;
   const router = useRouter();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -37,7 +40,7 @@ export default function ChatPage() {
       try {
         const response = await fetch(`${apiUrl}/api/sessions`, {
           headers: {
-            "Authorization": `Bearer ${authSession?.access_token || ''}`
+            "Authorization": `Bearer ${authSession?.appToken || ''}`
           }
         });
         
@@ -112,7 +115,7 @@ export default function ChatPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${authSession?.access_token || ''}`
+          "Authorization": `Bearer ${authSession?.appToken || ''}`
         },
         body: JSON.stringify({
           session_id: activeSessionId,
