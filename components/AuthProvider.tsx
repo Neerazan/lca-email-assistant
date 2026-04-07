@@ -7,8 +7,17 @@ import {
   useState,
   useCallback,
 } from "react";
-import { createClient } from "@/lib/supabaseClient";
-import type { User, Session } from "@supabase/supabase-js";
+
+export type User = {
+  id: string;
+  email?: string;
+  full_name?: string;
+  avatar_url?: string;
+};
+
+export type Session = {
+  access_token?: string;
+};
 
 type AuthContextType = {
   user: User | null;
@@ -38,46 +47,52 @@ export default function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Check session with the backend
+    const checkSession = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/auth/me`, {
+          // ensure cookies are sent with the request
+          credentials: "omit", // or "include" if the backend sets cookies across origins
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user || data); // gracefully handle { user: {...} } or just user payload
+          setSession(data.session || { access_token: data.access_token || "cookie-based" });
+        } else {
+          setUser(null);
+          setSession(null);
+        }
+      } catch (error) {
+        console.error("Failed to check auth session", error);
+        setUser(null);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    checkSession();
+  }, [apiUrl]);
 
   const signInWithGoogle = useCallback(async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        scopes:
-          "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send",
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
-      },
-    });
-  }, [supabase]);
+    // Redirect to the FastAPI login endpoint
+    window.location.href = `${apiUrl}/auth/login`;
+  }, [apiUrl]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, [supabase]);
+    try {
+      await fetch(`${apiUrl}/auth/logout`, { method: "POST" });
+    } catch (e) {
+      console.warn("Logout request failed", e);
+    }
+    setUser(null);
+    setSession(null);
+  }, [apiUrl]);
 
   return (
     <AuthContext.Provider

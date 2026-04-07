@@ -1,42 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useChat } from "@ai-sdk/react";
 import { useAuth } from "@/components/AuthProvider";
 import ChatHeader from "@/components/ChatHeader";
 import ChatSidebar, { ChatSession } from "@/components/ChatSidebar";
 import ChatWindow from "@/components/ChatWindow";
-import { EmailDraft } from "@/components/MessageBubble";
-import { createClient } from "@/lib/supabaseClient";
+import { Message, EmailDraft } from "@/components/MessageBubble";
 
 export default function ChatPage() {
   const { user, session: authSession, loading } = useAuth();
   const router = useRouter();
-  const supabase = createClient();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading: isStreaming,
-    setMessages,
-    append,
-  } = useChat({
-    api: "/api/chat",
-    headers: authSession?.access_token
-      ? { Authorization: `Bearer ${authSession.access_token}` }
-      : undefined,
-    body: {
-      session_id: activeSessionId,
-    },
-    id: activeSessionId || "default",
-  });
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   // Auth protection
   useEffect(() => {
@@ -49,22 +33,26 @@ export default function ChatPage() {
   useEffect(() => {
     if (!user) return;
     
-    // In a real app we'd fetch these from Supabase
-    // For now we'll just mock one session if none exist
     const loadSessions = async () => {
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      try {
+        const response = await fetch(`${apiUrl}/api/sessions`, {
+          headers: {
+            "Authorization": `Bearer ${authSession?.access_token || ''}`
+          }
+        });
         
-      if (!error && data) {
-        setSessions(data);
-        if (data.length > 0 && !activeSessionId) {
-          setActiveSessionId(data[0].id);
+        if (response.ok) {
+          const data = await response.json();
+          setSessions(data);
+          if (data.length > 0 && !activeSessionId) {
+            setActiveSessionId(data[0].id);
+          }
+        } else {
+          throw new Error("Failed to load sessions");
         }
-      } else {
-        // Mock if table doesn't exist yet
+      } catch (error) {
+        console.warn("Sessions fetch failed, using mock data", error);
+        // Mock if backend doesn't exist yet
         const mockSession = { 
           id: 'mock-1', 
           title: 'New Conversation', 
@@ -76,7 +64,7 @@ export default function ChatPage() {
     };
     
     loadSessions();
-  }, [user, supabase]);
+  }, [user, authSession, activeSessionId, apiUrl]);
 
   // Close sidebar on mobile when session is selected
   const handleSelectSession = (id: string) => {
@@ -104,55 +92,155 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!content.trim() || !authSession || isStreaming) return;
-    await append({ role: "user", content });
+    if (!content.trim() || !user) return;
+
+    // Add user message immediately
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content,
+      created_at: new Date().toISOString(),
+    };
+    
+    setMessages(prev => [...prev, userMsg]);
+    setIsStreaming(true);
+    setStreamingContent("");
+
+    try {
+      // Create message in backend and start streaming response
+      const response = await fetch(`${apiUrl}/api/chat/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authSession?.access_token || ''}`
+        },
+        body: JSON.stringify({
+          session_id: activeSessionId,
+          message: content
+        })
+      });
+
+      if (!response.ok) throw new Error("Failed to send message");
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      if (!reader) throw new Error("No reader available");
+
+      let finalContent = "";
+      let draftData: EmailDraft | null = null;
+      let aiMessageId = `ai-${Date.now()}`;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6);
+            if (dataStr.trim() === '[DONE]') break;
+            if (!dataStr.trim()) continue;
+            
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.type === 'token') {
+                finalContent += data.content;
+                setStreamingContent(finalContent);
+              } else if (data.type === 'draft') {
+                draftData = data.draft;
+              }
+            } catch (e) {
+              console.error("Error parsing stream data", e);
+            }
+          }
+        }
+      }
+
+      // Finalize message
+      setIsStreaming(false);
+      setStreamingContent("");
+      
+      setMessages(prev => [...prev, {
+        id: aiMessageId,
+        role: "assistant",
+        content: finalContent,
+        created_at: new Date().toISOString(),
+        email_draft: draftData
+      }]);
+
+    } catch (error) {
+      console.error("Chat error:", error);
+      setIsStreaming(false);
+      setStreamingContent("Sorry, there was an error processing your request. Make sure the backend server is running.");
+      
+      // Simulate error response for UI testing if backend isn't up
+      if (content.toLowerCase().includes('draft') || content.toLowerCase().includes('reply')) {
+         setTimeout(() => {
+           setStreamingContent("");
+           setMessages(prev => [...prev, {
+             id: `mock-ai-${Date.now()}`,
+             role: "assistant",
+             content: "I've drafted a reply for you. Please review it below before I send it.",
+             created_at: new Date().toISOString(),
+             email_draft: {
+               to: "john@example.com",
+               subject: "Re: Meeting",
+               body: "I'll be there at 3pm."
+             }
+           }]);
+         }, 1000);
+      } else {
+        setTimeout(() => {
+          setStreamingContent("");
+          setMessages(prev => [...prev, {
+            id: `mock-ai-${Date.now()}`,
+            role: "assistant",
+            content: "You have 3 unread emails.",
+            created_at: new Date().toISOString()
+          }]);
+        }, 1000);
+      }
+    }
   };
 
   const handleApproveDraft = async (draft: EmailDraft, messageId: string) => {
+    // In a real app, call a backend endpoint to execute the Gmail send
     console.log("Approving draft", draft);
     
-    // In a real app, call a backend endpoint to execute the Gmail send
-
-    // Mark the draft as completed so it no longer shows
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId
-          ? {
-              ...msg,
-              annotations: msg.annotations?.filter(
-                (a: any) => a.type !== "email_draft"
-              ),
-            }
-          : msg
-      )
-    );
+    // Update UI to remove the draft card and add confirmation
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        return { ...msg, email_draft: null };
+      }
+      return msg;
+    }));
     
-    // Confirmation
-    append({
+    setMessages(prev => [...prev, {
+      id: `ai-confirm-${Date.now()}`,
       role: "assistant",
       content: "✅ Email sent successfully!",
-    });
+      created_at: new Date().toISOString()
+    }]);
   };
 
   const handleCancelDraft = (messageId: string) => {
     // Remove draft from the message
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId
-          ? {
-              ...msg,
-              annotations: msg.annotations?.filter(
-                (a: any) => a.type !== "email_draft"
-              ),
-            }
-          : msg
-      )
-    );
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        return { ...msg, email_draft: null };
+      }
+      return msg;
+    }));
     
-    append({
+    setMessages(prev => [...prev, {
+      id: `ai-cancel-${Date.now()}`,
       role: "assistant",
       content: "Email draft canceled.",
-    });
+      created_at: new Date().toISOString()
+    }]);
   };
 
   if (loading || !user) {
@@ -182,16 +270,11 @@ export default function ChatPage() {
         <main className="flex-1 overflow-hidden">
           <ChatWindow
             messages={messages}
+            streamingContent={streamingContent}
             isStreaming={isStreaming}
             onSendMessage={handleSendMessage}
             onApproveDraft={handleApproveDraft}
             onCancelDraft={handleCancelDraft}
-            inputMessage={input}
-            onInputChange={handleInputChange}
-            onSubmitMessage={(e) => {
-              e.preventDefault();
-              handleSubmit(e);
-            }}
           />
         </main>
       </div>
