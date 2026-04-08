@@ -110,7 +110,7 @@ export default function ChatWindow({
       </div>
 
       {/* Input Area */}
-      <div className="p-4 sm:p-6 pb-6 sm:pb-8 bg-gradient-to-t from-[#0a0e1a] to-transparent z-20">
+      <div className="p-4 sm:p-6 pb-6 sm:pb-8 bg-linear-to-t from-[#0a0e1a] to-transparent z-20">
         <div className="max-w-4xl mx-auto">
           <form 
             onSubmit={handleSubmit}
@@ -132,7 +132,7 @@ export default function ChatWindow({
               className={`
                 shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200
                 ${inputMessage.trim() && !isStreaming
-                  ? "bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg focus:ring-2 focus:ring-indigo-500/50" 
+                  ? "bg-linear-to-br from-indigo-500 to-violet-600 text-white shadow-lg focus:ring-2 focus:ring-indigo-500/50" 
                   : "bg-white/5 text-slate-500 cursor-not-allowed"}
               `}
             >
@@ -146,7 +146,7 @@ export default function ChatWindow({
                 strokeWidth="2.5" 
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
-                className={inputMessage.trim() && !isStreaming ? "translate-x-[1px] -translate-y-[1px]" : ""}
+                className={inputMessage.trim() && !isStreaming ? "translate-x-px -translate-y-px" : ""}
               >
                 <line x1="22" y1="2" x2="11" y2="13" />
                 <polygon points="22 2 15 22 11 13 2 9 22 2" />

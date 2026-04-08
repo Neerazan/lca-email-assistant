@@ -52,7 +52,7 @@ export default function ChatSidebar({
           id="new-chat-button"
           onClick={onNewChat}
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
-            bg-gradient-to-r from-indigo-600 to-violet-600
+            bg-linear-to-r from-indigo-600 to-violet-600
             hover:from-indigo-500 hover:to-violet-500
             text-white font-medium text-sm
             transition-all duration-200

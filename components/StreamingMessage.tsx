@@ -12,7 +12,7 @@ export default function StreamingMessage({
   return (
     <div className="flex gap-3 justify-start animate-fade-in">
       {/* AI Avatar */}
-      <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mt-1">
+      <div className="shrink-0 w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center mt-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -35,7 +35,7 @@ export default function StreamingMessage({
 
       <div className="max-w-[80%] sm:max-w-[70%]">
         <div className="glass rounded-2xl rounded-bl-md px-4 py-3 text-sm leading-relaxed text-slate-200">
-          <div className="whitespace-pre-wrap break-words">
+          <div className="whitespace-pre-wrap wrap-break-words">
             {content}
             {!isComplete && (
               <span className="typing-cursor" />

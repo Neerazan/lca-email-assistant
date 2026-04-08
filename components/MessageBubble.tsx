@@ -41,7 +41,7 @@ export default function MessageBubble({
     >
       {/* AI Avatar */}
       {!isUser && (
-        <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mt-1">
+        <div className="shrink-0 w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center mt-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -70,13 +70,13 @@ export default function MessageBubble({
             rounded-2xl px-4 py-3 text-sm leading-relaxed
             ${
               isUser
-                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-br-md"
+                ? "bg-linear-to-r from-indigo-600 to-violet-600 text-white rounded-br-md"
                 : "glass text-slate-200 rounded-bl-md"
             }
           `}
         >
           {/* Render message content with basic formatting */}
-          <div className="whitespace-pre-wrap break-words">
+          <div className="whitespace-pre-wrap wrap-break-words">
             {message.content}
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function MessageBubble({
 
       {/* User Avatar */}
       {isUser && (
-        <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mt-1">
+        <div className="shrink-0 w-8 h-8 rounded-full bg-linear-to-br from-blue-500 to-cyan-500 flex items-center justify-center mt-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

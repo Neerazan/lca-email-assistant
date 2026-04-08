@@ -1,18 +1,15 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import ChatHeader from "@/components/ChatHeader";
 import ChatSidebar, { ChatSession } from "@/components/ChatSidebar";
 import ChatWindow from "@/components/ChatWindow";
 import { Message, EmailDraft } from "@/components/MessageBubble";
 
 export default function ChatPage() {
-  const { data: session, status } = useSession();
-  const loading = status === "loading";
-  const user = session?.user;
-  const authSession = session;
+  const { user, appToken, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -25,22 +22,22 @@ export default function ChatPage() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // Auth protection
+  // Auth protection — redirect to login if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       router.push("/");
     }
-  }, [user, loading, router]);
+  }, [user, isLoading, router]);
 
-  // Load sessions on mount or user change
+  // Load sessions on mount or when authenticated
   useEffect(() => {
-    if (!user) return;
+    if (!isAuthenticated || !appToken) return;
     
     const loadSessions = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/sessions`, {
+        const response = await fetch(`${apiUrl}/chat/sessions`, {
           headers: {
-            "Authorization": `Bearer ${authSession?.appToken || ''}`
+            "Authorization": `Bearer ${appToken}`
           }
         });
         
@@ -67,7 +64,7 @@ export default function ChatPage() {
     };
     
     loadSessions();
-  }, [user, authSession, activeSessionId, apiUrl]);
+  }, [isAuthenticated, appToken, activeSessionId, apiUrl]);
 
   // Close sidebar on mobile when session is selected
   const handleSelectSession = (id: string) => {
@@ -95,7 +92,7 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async (content: string) => {
-    if (!content.trim() || !user) return;
+    if (!content.trim() || !user || !appToken) return;
 
     // Add user message immediately
     const userMsg: Message = {
@@ -111,11 +108,11 @@ export default function ChatPage() {
 
     try {
       // Create message in backend and start streaming response
-      const response = await fetch(`${apiUrl}/api/chat/stream`, {
+      const response = await fetch(`${apiUrl}/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${authSession?.appToken || ''}`
+          "Authorization": `Bearer ${appToken}`
         },
         body: JSON.stringify({
           session_id: activeSessionId,
@@ -132,7 +129,7 @@ export default function ChatPage() {
 
       let finalContent = "";
       let draftData: EmailDraft | null = null;
-      let aiMessageId = `ai-${Date.now()}`;
+      const aiMessageId = `ai-${Date.now()}`;
 
       while (true) {
         const { value, done } = await reader.read();
@@ -246,7 +243,7 @@ export default function ChatPage() {
     }]);
   };
 
-  if (loading || !user) {
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a]">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />

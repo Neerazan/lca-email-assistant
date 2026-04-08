@@ -8,7 +8,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       authorization: {
         params: {
-          // Request Gmail scopes alongside login — one step
+          // Request Gmail scopes alongside login — single consent step
           scope: [
             "openid",
             "https://www.googleapis.com/auth/userinfo.email",
@@ -17,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             "https://www.googleapis.com/auth/gmail.send",
           ].join(" "),
           access_type: "offline",  // get refresh token
-          prompt: "consent",       // always show consent to get refresh token
+          prompt: "consent",       // always show consent → ensures refresh token
         },
       },
     }),
@@ -26,49 +26,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     // Runs when JWT is created or updated
     async jwt({ token, account }) {
-      // On first sign in, account contains Google tokens
+      // On first sign-in, `account` contains all Google tokens.
+      // Store them in the JWT — they will be forwarded to the backend
+      // via the server-side /api/auth/sync route (never exposed to browser).
       if (account) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
-        token.expiresAt = account.expires_at
-
-        // Send Google token to FastAPI, get back your app JWT
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/google`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                access_token: account.access_token,
-                refresh_token: account.refresh_token,
-                expires_at: account.expires_at,
-              }),
-            }
-          )
-          const data = await res.json()
-          if (data.app_token) {
-            token.appToken = data.app_token  // your FastAPI JWT
-          } else {
-            console.error("No app_token in response:", data);
-          }
-        } catch (error) {
-          console.error("Failed to sync with backend:", error)
-        }
+        token.idToken = account.id_token
+        token.needsSync = true
       }
+
+      // NO backend API calls here — that's an anti-pattern.
+      // The sync happens in a controlled frontend lifecycle step.
       return token
     },
 
     // Runs when session is accessed in the app
     async session({ session, token }) {
+      // Expose ONLY safe, non-sensitive data to the frontend.
       session.accessToken = token.accessToken as string
-      session.appToken = token.appToken as string  // pass app JWT to client
+      session.idToken = token.idToken as string
+      session.needsSync = token.needsSync as boolean
+
+      // NEVER expose refreshToken to the client.
+      // It stays in the server-side JWT only, accessible via auth() on the server.
+
       return session
     },
   },
 
   pages: {
-    signIn: "/",   // our root page acts as login
+    signIn: "/",   // root page acts as login
     error: "/",    // redirect errors to root
   },
 })
