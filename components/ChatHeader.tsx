@@ -12,85 +12,51 @@ export default function ChatHeader({
 }: ChatHeaderProps) {
   const { user, signOut } = useAuth();
 
-
   return (
-    <header className="glass-strong flex items-center justify-between px-4 py-3 sm:px-6 border-b border-white/10 z-20">
-      {/* Left: Sidebar toggle + Logo */}
-      <div className="flex items-center gap-3">
+    <header
+      className="flex items-center justify-between px-4 py-2.5 border-b border-white/6 z-20"
+      style={{ background: "var(--chat-header-bg)", backdropFilter: "blur(12px)" }}
+    >
+      {/* Left: Sidebar toggle + Title */}
+      <div className="flex items-center gap-2">
         <button
           id="sidebar-toggle"
           onClick={onToggleSidebar}
-          className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors"
+          className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
           aria-label="Toggle sidebar"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {sidebarOpen ? (
-              <>
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </>
-            ) : (
-              <>
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </>
-            )}
-          </svg>
-        </button>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+          {sidebarOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M9 3v18" />
             </svg>
-          </div>
-          <span className="font-semibold text-base hidden sm:block">
-            AI Email Assistant
-          </span>
-        </div>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M9 3v18" />
+            </svg>
+          )}
+        </button>
+        <span className="text-sm font-medium text-slate-300">
+          AI Email Assistant
+        </span>
       </div>
 
-      {/* Right: User info + Sign out */}
-      <div className="flex items-center gap-3">
+      {/* Right: User + Sign out */}
+      <div className="flex items-center gap-2">
         {user && (
           <>
-            <div className="hidden sm:flex flex-col items-end mr-1">
-              <span className="text-sm font-medium text-slate-200 leading-tight">
-                {user.name || user.email?.split("@")[0]}
-              </span>
-              <span className="text-xs text-slate-400 leading-tight">
-                {user.email}
-              </span>
-            </div>
-            {user.image ? (
+            <span className="text-xs text-slate-500 hidden sm:inline mr-1">
+              {user.email}
+            </span>
+            {user.picture ? (
               <img
-                src={user.image}
+                src={user.picture}
                 alt="Avatar"
-                className="w-8 h-8 rounded-full ring-2 ring-indigo-500/50"
+                className="w-6 h-6 rounded-full"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-sm font-bold">
+              <div className="w-6 h-6 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-[10px] font-bold text-white">
                 {(user.email?.[0] || "U").toUpperCase()}
               </div>
             )}
@@ -99,20 +65,10 @@ export default function ChatHeader({
         <button
           id="sign-out-button"
           onClick={() => signOut()}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md text-slate-500 hover:text-white hover:bg-white/10 transition-all"
           title="Sign out"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
