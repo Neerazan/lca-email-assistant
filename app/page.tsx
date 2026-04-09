@@ -1,5 +1,4 @@
-import { signIn } from "@/auth";
-import Image from "next/image";
+import LoginButton from "@/components/LoginButton";
 
 export default function LandingPage() {
   return (
@@ -35,31 +34,13 @@ export default function LandingPage() {
           A portfolio demonstration of an AI agent designed to read, summarize, structure, and draft replies to your emails natively using LangGraph.
         </p>
 
-        <form 
-          className="pt-8 w-full max-w-sm"
-          action={async () => {
-            "use server";
-            await signIn("google", { redirectTo: "/chat" });
-          }}
-        >
-          <button
-            type="submit"
-            className="group relative flex w-full items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-all overflow-hidden cursor-pointer"
-          >
-            <div className="absolute inset-0 bg-linear-to-r from-indigo-500/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Image
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="Google"
-              width={20}
-              height={20}
-            />
-            Continue with Google
-          </button>
+        <div className="pt-8 w-full max-w-sm">
+          <LoginButton />
           
           <p className="mt-4 text-xs text-slate-500">
             For demonstration purposes. Requires granting basic read/send access.
           </p>
-        </form>
+        </div>
       </main>
     </div>
   );

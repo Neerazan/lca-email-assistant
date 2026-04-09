@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { clientFetchAPI } from "@/lib/api";
 import ChatHeader from "@/components/ChatHeader";
 import ChatSidebar, { ChatSession } from "@/components/ChatSidebar";
 import ChatWindow from "@/components/ChatWindow";
@@ -35,17 +36,17 @@ export default function ChatPage() {
     
     const loadSessions = async () => {
       try {
-        const response = await fetch(`${apiUrl}/chat/sessions`, {
-          headers: {
-            "Authorization": `Bearer ${appToken}`
-          }
-        });
+        const response = await clientFetchAPI("/chat/sessions", appToken);
         
         if (response.ok) {
           const data = await response.json();
-          setSessions(data);
-          if (data.length > 0 && !activeSessionId) {
-            setActiveSessionId(data[0].id);
+          if (Array.isArray(data)) {
+            setSessions(data);
+            if (data.length > 0 && !activeSessionId) {
+              setActiveSessionId(data[0].id);
+            }
+          } else {
+            throw new Error("Backend returned invalid sessions data format");
           }
         } else {
           throw new Error("Failed to load sessions");
@@ -108,12 +109,8 @@ export default function ChatPage() {
 
     try {
       // Create message in backend and start streaming response
-      const response = await fetch(`${apiUrl}/chat/stream`, {
+      const response = await clientFetchAPI("/chat/stream", appToken, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${appToken}`
-        },
         body: JSON.stringify({
           session_id: activeSessionId,
           message: content
