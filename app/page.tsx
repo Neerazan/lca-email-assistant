@@ -1,4 +1,5 @@
 import LoginButton from "@/components/LoginButton";
+import Link from "next/link";
 
 export default function LandingPage() {
   return (
@@ -42,6 +43,17 @@ export default function LandingPage() {
           </p>
         </div>
       </main>
+
+      {/* Footer with legal links */}
+      <footer className="absolute bottom-6 left-0 right-0 z-10 flex items-center justify-center gap-4 text-xs text-slate-600">
+        <Link href="/terms" className="hover:text-slate-400 transition-colors">
+          Terms of Service
+        </Link>
+        <span>·</span>
+        <Link href="/privacy" className="hover:text-slate-400 transition-colors">
+          Privacy Policy
+        </Link>
+      </footer>
     </div>
   );
 }
