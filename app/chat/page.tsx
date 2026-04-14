@@ -20,6 +20,7 @@ export default function ChatPage() {
   
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [streamingTool, setStreamingTool] = useState<string | null>(null);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -106,6 +107,7 @@ export default function ChatPage() {
     setMessages(prev => [...prev, userMsg]);
     setIsStreaming(true);
     setStreamingContent("");
+    setStreamingTool(null);
 
     try {
       // Create message in backend and start streaming response
@@ -143,7 +145,14 @@ export default function ChatPage() {
             
             try {
               const data = JSON.parse(dataStr);
-              if (data.type === 'token') {
+              if (data.token !== undefined) {
+                finalContent += data.token;
+                setStreamingContent(finalContent);
+              } else if (data.tool_call !== undefined) {
+                setStreamingTool(data.tool_call);
+              } else if (data.done === true) {
+                break;
+              } else if (data.type === 'token') {
                 finalContent += data.content;
                 setStreamingContent(finalContent);
               } else if (data.type === 'draft') {
@@ -159,6 +168,7 @@ export default function ChatPage() {
       // Finalize message
       setIsStreaming(false);
       setStreamingContent("");
+      setStreamingTool(null);
       
       setMessages(prev => [...prev, {
         id: aiMessageId,
@@ -172,6 +182,7 @@ export default function ChatPage() {
       console.error("Chat error:", error);
       setIsStreaming(false);
       setStreamingContent("Sorry, there was an error processing your request. Make sure the backend server is running.");
+      setStreamingTool(null);
       
       // Simulate error response for UI testing if backend isn't up
       if (content.toLowerCase().includes('draft') || content.toLowerCase().includes('reply')) {
@@ -268,6 +279,7 @@ export default function ChatPage() {
           <ChatWindow
             messages={messages}
             streamingContent={streamingContent}
+            streamingTool={streamingTool}
             isStreaming={isStreaming}
             onSendMessage={handleSendMessage}
             onApproveDraft={handleApproveDraft}

@@ -7,6 +7,7 @@ import StreamingMessage from "./StreamingMessage";
 interface ChatWindowProps {
   messages: Message[];
   streamingContent: string;
+  streamingTool: string | null;
   isStreaming: boolean;
   onSendMessage: (content: string) => void;
   onApproveDraft: (draft: EmailDraft, messageId: string) => void;
@@ -16,6 +17,7 @@ interface ChatWindowProps {
 export default function ChatWindow({
   messages,
   streamingContent,
+  streamingTool,
   isStreaming,
   onSendMessage,
   onApproveDraft,
@@ -111,7 +113,7 @@ export default function ChatWindow({
             ))}
 
             {isStreaming && (
-              <StreamingMessage content={streamingContent} isComplete={false} />
+              <StreamingMessage content={streamingContent} tool={streamingTool} isComplete={false} />
             )}
             <div ref={messagesEndRef} className="h-8" />
           </div>
