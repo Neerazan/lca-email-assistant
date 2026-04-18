@@ -16,7 +16,7 @@ export default function LoginButton() {
     },
     onError: (error) => console.log("Login Failed:", error),
     flow: "auth-code",
-    scope: "openid email profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send",
+    scope: "openid email profile https://www.googleapis.com/auth/gmail.modify",
   })
 
   return (

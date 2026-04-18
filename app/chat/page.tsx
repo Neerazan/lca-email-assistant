@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
-import { clientFetchAPI } from "@/lib/api";
 import ChatHeader from "@/components/ChatHeader";
 import ChatSidebar, { ChatSession } from "@/components/ChatSidebar";
 import ChatWindow from "@/components/ChatWindow";
-import { Message, EmailDraft } from "@/components/MessageBubble";
+import { useAuth } from "@/contexts/AuthContext";
+import { clientFetchAPI } from "@/lib/api";
+import { useAgentStream } from "@/hooks/useAgentStream";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
 
 export default function ChatPage() {
   const { user, appToken, isAuthenticated, isLoading } = useAuth();
@@ -16,13 +16,33 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
-  const [streamingTool, setStreamingTool] = useState<string | null>(null);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  // Use the active session ID as the thread_id for the agent
+  // Memoize so Date.now() doesn't change on every re-render
+  const threadId = useMemo(
+    () => activeSessionId || `thread-${Date.now()}`,
+    [activeSessionId]
+  );
+
+  const {
+    messages,
+    interrupt,
+    isStreaming,
+    activeTool,
+    sendMessage,
+    resume,
+    clearMessages,
+  } = useAgentStream(threadId, appToken);
+
+  // Derive streaming state for ChatWindow
+  const streamingContent = useMemo(() => {
+    if (!isStreaming) return "";
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg?.role === "assistant") return lastMsg.content;
+    return "";
+  }, [isStreaming, messages]);
 
   // Auth protection — redirect to login if not authenticated
   useEffect(() => {
@@ -34,11 +54,11 @@ export default function ChatPage() {
   // Load sessions on mount or when authenticated
   useEffect(() => {
     if (!isAuthenticated || !appToken) return;
-    
+
     const loadSessions = async () => {
       try {
         const response = await clientFetchAPI("/chat/sessions", appToken);
-        
+
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data)) {
@@ -55,31 +75,30 @@ export default function ChatPage() {
       } catch (error) {
         console.warn("Sessions fetch failed, using mock data", error);
         // Mock if backend doesn't exist yet
-        const mockSession = { 
-          id: 'mock-1', 
-          title: 'New Conversation', 
-          created_at: new Date().toISOString() 
+        const mockSession = {
+          id: `session-${crypto.randomUUID()}`,
+          title: 'New Conversation',
+          created_at: new Date().toISOString()
         };
         setSessions([mockSession]);
         setActiveSessionId(mockSession.id);
       }
     };
-    
+
     loadSessions();
   }, [isAuthenticated, appToken, activeSessionId, apiUrl]);
 
   // Close sidebar on mobile when session is selected
   const handleSelectSession = (id: string) => {
     setActiveSessionId(id);
-    // In a real app we'd load messages for this session here
-    setMessages([]);
+    clearMessages();
     if (window.innerWidth < 640) {
       setSidebarOpen(false);
     }
   };
 
   const handleNewChat = () => {
-    const newId = `new-${Date.now()}`;
+    const newId = `session-${crypto.randomUUID()}`;
     const newSession = {
       id: newId,
       title: "New Conversation",
@@ -87,168 +106,10 @@ export default function ChatPage() {
     };
     setSessions([newSession, ...sessions]);
     setActiveSessionId(newId);
-    setMessages([]);
+    clearMessages();
     if (window.innerWidth < 640) {
       setSidebarOpen(false);
     }
-  };
-
-  const handleSendMessage = async (content: string) => {
-    if (!content.trim() || !user || !appToken) return;
-
-    // Add user message immediately
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content,
-      created_at: new Date().toISOString(),
-    };
-    
-    setMessages(prev => [...prev, userMsg]);
-    setIsStreaming(true);
-    setStreamingContent("");
-    setStreamingTool(null);
-
-    try {
-      // Create message in backend and start streaming response
-      const response = await clientFetchAPI("/chat/stream", appToken, {
-        method: "POST",
-        body: JSON.stringify({
-          session_id: activeSessionId,
-          message: content
-        })
-      });
-
-      if (!response.ok) throw new Error("Failed to send message");
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder("utf-8");
-
-      if (!reader) throw new Error("No reader available");
-
-      let finalContent = "";
-      let draftData: EmailDraft | null = null;
-      const aiMessageId = `ai-${Date.now()}`;
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6);
-            if (dataStr.trim() === '[DONE]') break;
-            if (!dataStr.trim()) continue;
-            
-            try {
-              const data = JSON.parse(dataStr);
-              if (data.token !== undefined) {
-                finalContent += data.token;
-                setStreamingContent(finalContent);
-              } else if (data.tool_call !== undefined) {
-                setStreamingTool(data.tool_call);
-              } else if (data.done === true) {
-                break;
-              } else if (data.type === 'token') {
-                finalContent += data.content;
-                setStreamingContent(finalContent);
-              } else if (data.type === 'draft') {
-                draftData = data.draft;
-              }
-            } catch (e) {
-              console.error("Error parsing stream data", e);
-            }
-          }
-        }
-      }
-
-      // Finalize message
-      setIsStreaming(false);
-      setStreamingContent("");
-      setStreamingTool(null);
-      
-      setMessages(prev => [...prev, {
-        id: aiMessageId,
-        role: "assistant",
-        content: finalContent,
-        created_at: new Date().toISOString(),
-        email_draft: draftData
-      }]);
-
-    } catch (error) {
-      console.error("Chat error:", error);
-      setIsStreaming(false);
-      setStreamingContent("Sorry, there was an error processing your request. Make sure the backend server is running.");
-      setStreamingTool(null);
-      
-      // Simulate error response for UI testing if backend isn't up
-      if (content.toLowerCase().includes('draft') || content.toLowerCase().includes('reply')) {
-         setTimeout(() => {
-           setStreamingContent("");
-           setMessages(prev => [...prev, {
-             id: `mock-ai-${Date.now()}`,
-             role: "assistant",
-             content: "I've drafted a reply for you. Please review it below before I send it.",
-             created_at: new Date().toISOString(),
-             email_draft: {
-               to: "john@example.com",
-               subject: "Re: Meeting",
-               body: "I'll be there at 3pm."
-             }
-           }]);
-         }, 1000);
-      } else {
-        setTimeout(() => {
-          setStreamingContent("");
-          setMessages(prev => [...prev, {
-            id: `mock-ai-${Date.now()}`,
-            role: "assistant",
-            content: "You have 3 unread emails.",
-            created_at: new Date().toISOString()
-          }]);
-        }, 1000);
-      }
-    }
-  };
-
-  const handleApproveDraft = async (draft: EmailDraft, messageId: string) => {
-    // In a real app, call a backend endpoint to execute the Gmail send
-    console.log("Approving draft", draft);
-    
-    // Update UI to remove the draft card and add confirmation
-    setMessages(prev => prev.map(msg => {
-      if (msg.id === messageId) {
-        return { ...msg, email_draft: null };
-      }
-      return msg;
-    }));
-    
-    setMessages(prev => [...prev, {
-      id: `ai-confirm-${Date.now()}`,
-      role: "assistant",
-      content: "✅ Email sent successfully!",
-      created_at: new Date().toISOString()
-    }]);
-  };
-
-  const handleCancelDraft = (messageId: string) => {
-    // Remove draft from the message
-    setMessages(prev => prev.map(msg => {
-      if (msg.id === messageId) {
-        return { ...msg, email_draft: null };
-      }
-      return msg;
-    }));
-    
-    setMessages(prev => [...prev, {
-      id: `ai-cancel-${Date.now()}`,
-      role: "assistant",
-      content: "Email draft canceled.",
-      created_at: new Date().toISOString()
-    }]);
   };
 
   if (isLoading || !user) {
@@ -268,22 +129,22 @@ export default function ChatPage() {
         onNewChat={handleNewChat}
         isOpen={sidebarOpen}
       />
-      
+
       <div className="flex-1 flex flex-col min-w-0 relative">
         <ChatHeader
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           sidebarOpen={sidebarOpen}
         />
-        
+
         <main className="flex-1 overflow-hidden">
           <ChatWindow
             messages={messages}
             streamingContent={streamingContent}
-            streamingTool={streamingTool}
+            streamingTool={activeTool}
             isStreaming={isStreaming}
-            onSendMessage={handleSendMessage}
-            onApproveDraft={handleApproveDraft}
-            onCancelDraft={handleCancelDraft}
+            interrupt={interrupt}
+            onSendMessage={sendMessage}
+            onResume={resume}
           />
         </main>
       </div>
