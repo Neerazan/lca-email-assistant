@@ -15,14 +15,30 @@ export default function ChatPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  
+  // Initialize from URL search param if available
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("session");
+    }
+    return null;
+  });
+
+  // Sync URL when activeSessionId changes
+  useEffect(() => {
+    if (activeSessionId && typeof window !== "undefined") {
+      window.history.replaceState(null, "", `/chat?session=${activeSessionId}`);
+    }
+  }, [activeSessionId]);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   // Use the active session ID as the thread_id for the agent
   // Memoize so Date.now() doesn't change on every re-render
   const threadId = useMemo(
-    () => activeSessionId || `thread-${Date.now()}`,
+    () => activeSessionId || "",
     [activeSessionId]
   );
 
@@ -65,6 +81,20 @@ export default function ChatPage() {
             setSessions(data);
             if (data.length > 0 && !activeSessionId) {
               setActiveSessionId(data[0].id);
+            } else if (data.length === 0 && !activeSessionId) {
+              // Automatically create a real session if none exist
+              try {
+                const createRes = await clientFetchAPI("/chat/sessions", appToken, {
+                  method: "POST",
+                });
+                if (createRes.ok) {
+                  const newSession = await createRes.json();
+                  setSessions([newSession]);
+                  setActiveSessionId(newSession.id);
+                }
+              } catch (e) {
+                console.error("Failed to auto-create session", e);
+              }
             }
           } else {
             throw new Error("Backend returned invalid sessions data format");
@@ -73,15 +103,7 @@ export default function ChatPage() {
           throw new Error("Failed to load sessions");
         }
       } catch (error) {
-        console.warn("Sessions fetch failed, using mock data", error);
-        // Mock if backend doesn't exist yet
-        const mockSession = {
-          id: `session-${crypto.randomUUID()}`,
-          title: 'New Conversation',
-          created_at: new Date().toISOString()
-        };
-        setSessions([mockSession]);
-        setActiveSessionId(mockSession.id);
+        console.warn("Sessions fetch failed", error);
       }
     };
 
@@ -97,18 +119,58 @@ export default function ChatPage() {
     }
   };
 
-  const handleNewChat = () => {
-    const newId = `session-${crypto.randomUUID()}`;
-    const newSession = {
-      id: newId,
-      title: "New Conversation",
-      created_at: new Date().toISOString(),
-    };
-    setSessions([newSession, ...sessions]);
-    setActiveSessionId(newId);
-    clearMessages();
-    if (window.innerWidth < 640) {
-      setSidebarOpen(false);
+  const handleNewChat = async () => {
+    try {
+      const response = await clientFetchAPI("/chat/sessions", appToken, {
+        method: "POST",
+      });
+      if (response.ok) {
+        const newSession = await response.json();
+        setSessions([newSession, ...sessions]);
+        setActiveSessionId(newSession.id);
+        clearMessages();
+        if (window.innerWidth < 640) {
+          setSidebarOpen(false);
+        }
+      } else {
+        console.error("Failed to create new session");
+      }
+    } catch (error) {
+      console.error("Error creating session:", error);
+    }
+  };
+
+  const handleDeleteSession = (id: string) => {
+    setSessionToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!sessionToDelete) return;
+    const id = sessionToDelete;
+    
+    try {
+      const response = await clientFetchAPI(`/chat/sessions/${id}`, appToken, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        const remainingSessions = sessions.filter(s => s.id !== id);
+        setSessions(remainingSessions);
+        if (activeSessionId === id) {
+          if (remainingSessions.length > 0) {
+            setActiveSessionId(remainingSessions[0].id);
+          } else {
+            setActiveSessionId(null);
+            clearMessages();
+            handleNewChat(); // Create a new one if deleted the last
+          }
+        }
+      } else {
+        console.error("Failed to delete session");
+      }
+    } catch (error) {
+      console.error("Error deleting session:", error);
+    } finally {
+      setSessionToDelete(null);
     }
   };
 
@@ -127,6 +189,7 @@ export default function ChatPage() {
         activeSessionId={activeSessionId}
         onSelectSession={handleSelectSession}
         onNewChat={handleNewChat}
+        onDeleteSession={handleDeleteSession}
         isOpen={sidebarOpen}
       />
 
@@ -148,6 +211,32 @@ export default function ChatPage() {
           />
         </main>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {sessionToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1e2330] p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 border border-white/10">
+            <h3 className="text-xl font-medium text-white mb-4">Delete chat?</h3>
+            <p className="text-[15px] text-slate-300 mb-8 leading-relaxed">
+              This will delete prompts, responses, and any content you created in this session.
+            </p>
+            <div className="flex items-center justify-end gap-3 font-medium">
+              <button
+                onClick={() => setSessionToDelete(null)}
+                className="px-5 py-2.5 rounded-full text-sm text-slate-200 hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-5 py-2.5 rounded-full text-sm bg-[#2b3142] text-red-400 hover:bg-[#343b4f] transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

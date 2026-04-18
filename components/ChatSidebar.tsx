@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 export interface ChatSession {
   id: string;
   title: string;
@@ -11,6 +13,7 @@ interface ChatSidebarProps {
   activeSessionId: string | null;
   onSelectSession: (id: string) => void;
   onNewChat: () => void;
+  onDeleteSession: (id: string) => void;
   isOpen: boolean;
 }
 
@@ -19,6 +22,7 @@ export default function ChatSidebar({
   activeSessionId,
   onSelectSession,
   onNewChat,
+  onDeleteSession,
   isOpen,
 }: ChatSidebarProps) {
   const formatDate = (dateStr: string) => {
@@ -79,7 +83,7 @@ export default function ChatSidebar({
                 onClick={() => onSelectSession(session.id)}
                 className={`
                   w-full text-left px-3 py-2 rounded-lg text-sm
-                  transition-colors group truncate
+                  transition-colors group relative flex items-center justify-between
                   ${
                     activeSessionId === session.id
                       ? "bg-white/8 text-white"
@@ -87,10 +91,28 @@ export default function ChatSidebar({
                   }
                 `}
               >
-                <span className="truncate block">{session.title || "New conversation"}</span>
-                <span className="text-[10px] text-slate-600 block mt-0.5">
-                  {formatDate(session.created_at)}
-                </span>
+                <div className="flex-1 truncate pr-6">
+                  <span className="truncate block">{session.title || "New conversation"}</span>
+                  <span className="text-[10px] text-slate-600 block mt-0.5">
+                    {formatDate(session.created_at)}
+                  </span>
+                </div>
+                
+                {/* Delete button (shows on hover) */}
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteSession(session.id);
+                  }}
+                  className="absolute right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-red-500/20 hover:text-red-400 text-slate-500 transition-all"
+                  title="Delete chat"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                </div>
               </button>
             ))}
           </div>

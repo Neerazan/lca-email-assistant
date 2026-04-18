@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { clientFetchAPI } from "@/lib/api";
 
 export interface InterruptValue {
@@ -92,8 +92,39 @@ export function useAgentStream(threadId: string, appToken: string | null) {
     }
   }, []);
 
+  // Fetch messages from the backend when threadId changes
+  useEffect(() => {
+    if (!threadId || !appToken) return;
+    
+    // Don't fetch if it's a completely new locally-generated thread
+    if (threadId.startsWith("thread-")) return;
+
+    const fetchMessages = async () => {
+      try {
+        const response = await clientFetchAPI(`/chat/sessions/${threadId}/messages`, appToken);
+        if (response.ok) {
+          const data = await response.json();
+          // Ensure messages have a unique id for React rendering
+          setMessages(data.map((msg: any) => ({
+            ...msg,
+            id: msg.id || crypto.randomUUID(),
+          })));
+        }
+      } catch (error) {
+        console.error("Failed to load messages:", error);
+      }
+    };
+
+    fetchMessages();
+  }, [threadId, appToken]);
+
   const sendMessage = useCallback(
     async (message: string) => {
+      if (!threadId) {
+        console.error("Cannot send message: No active session (threadId is empty)");
+        return;
+      }
+      
       // Add user message immediately
       setMessages((prev) => [
         ...prev,
