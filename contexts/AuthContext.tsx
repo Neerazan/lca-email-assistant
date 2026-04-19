@@ -18,6 +18,10 @@ interface User {
   picture?: string
 }
 
+interface AuthTokenPayload extends User {
+  exp?: number
+}
+
 interface AuthContextValue {
   appToken: string | null
   isAuthenticated: boolean
@@ -52,7 +56,10 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
 
   const handleToken = (token: string) => {
     try {
-      const decoded = jwtDecode<User>(token)
+      const decoded = jwtDecode<AuthTokenPayload>(token)
+      if (!decoded?.sub || !decoded?.email) {
+        throw new Error("Token payload is missing required fields")
+      }
       setAppToken(token)
       setUser(decoded)
       localStorage.setItem("app_token", token)
@@ -103,7 +110,7 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
           setIsLoading(false)
           return
         }
-      } catch (e) {
+      } catch {
         // Fallthrough to refresh
       }
     }

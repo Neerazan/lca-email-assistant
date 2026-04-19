@@ -4,10 +4,10 @@ import ChatHeader from "@/components/ChatHeader";
 import ChatSidebar, { ChatSession } from "@/components/ChatSidebar";
 import ChatWindow from "@/components/ChatWindow";
 import { useAuth } from "@/contexts/AuthContext";
-import { clientFetchAPI } from "@/lib/api";
 import { useAgentStream } from "@/hooks/useAgentStream";
+import { clientFetchAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function ChatPage() {
   const { user, appToken, isAuthenticated, isLoading } = useAuth();
@@ -16,7 +16,7 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
-  
+
   // Initialize from URL search param if available
   const [activeSessionId, setActiveSessionId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
@@ -33,14 +33,7 @@ export default function ChatPage() {
     }
   }, [activeSessionId]);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-  // Use the active session ID as the thread_id for the agent
-  // Memoize so Date.now() doesn't change on every re-render
-  const threadId = useMemo(
-    () => activeSessionId || "",
-    [activeSessionId]
-  );
+  const threadId = activeSessionId || "";
 
   const {
     messages,
@@ -108,25 +101,27 @@ export default function ChatPage() {
     };
 
     loadSessions();
-  }, [isAuthenticated, appToken, activeSessionId, apiUrl]);
+  }, [isAuthenticated, appToken, activeSessionId]);
 
-  // Close sidebar on mobile when session is selected
-  const handleSelectSession = (id: string) => {
-    setActiveSessionId(id);
-    clearMessages();
-    if (window.innerWidth < 640) {
-      setSidebarOpen(false);
-    }
-  };
+  const handleSelectSession = useCallback(
+    (id: string) => {
+      setActiveSessionId(id);
+      clearMessages();
+      if (window.innerWidth < 640) {
+        setSidebarOpen(false);
+      }
+    },
+    [clearMessages]
+  );
 
-  const handleNewChat = async () => {
+  const handleNewChat = useCallback(async () => {
     try {
       const response = await clientFetchAPI("/chat/sessions", appToken, {
         method: "POST",
       });
       if (response.ok) {
         const newSession = await response.json();
-        setSessions([newSession, ...sessions]);
+        setSessions((prev) => [newSession, ...prev]);
         setActiveSessionId(newSession.id);
         clearMessages();
         if (window.innerWidth < 640) {
@@ -138,32 +133,34 @@ export default function ChatPage() {
     } catch (error) {
       console.error("Error creating session:", error);
     }
-  };
+  }, [appToken, clearMessages]);
 
-  const handleDeleteSession = (id: string) => {
+  const handleDeleteSession = useCallback((id: string) => {
     setSessionToDelete(id);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = useCallback(async () => {
     if (!sessionToDelete) return;
     const id = sessionToDelete;
-    
+
     try {
       const response = await clientFetchAPI(`/chat/sessions/${id}`, appToken, {
         method: "DELETE",
       });
       if (response.ok) {
-        const remainingSessions = sessions.filter(s => s.id !== id);
-        setSessions(remainingSessions);
-        if (activeSessionId === id) {
-          if (remainingSessions.length > 0) {
-            setActiveSessionId(remainingSessions[0].id);
-          } else {
-            setActiveSessionId(null);
-            clearMessages();
-            handleNewChat(); // Create a new one if deleted the last
+        setSessions((prev) => {
+          const remainingSessions = prev.filter((s) => s.id !== id);
+          if (activeSessionId === id) {
+            if (remainingSessions.length > 0) {
+              setActiveSessionId(remainingSessions[0].id);
+            } else {
+              setActiveSessionId(null);
+              clearMessages();
+              handleNewChat();
+            }
           }
-        }
+          return remainingSessions;
+        });
       } else {
         console.error("Failed to delete session");
       }
@@ -172,7 +169,7 @@ export default function ChatPage() {
     } finally {
       setSessionToDelete(null);
     }
-  };
+  }, [appToken, activeSessionId, clearMessages, handleNewChat, sessionToDelete]);
 
   if (isLoading || !user) {
     return (

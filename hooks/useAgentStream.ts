@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from "react";
 import { clientFetchAPI } from "@/lib/api";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface InterruptValue {
   actionRequests: {
@@ -20,6 +20,40 @@ export interface Message {
   created_at: string;
 }
 
+interface StreamTokenPayload {
+  type: "token";
+  token: string;
+}
+
+interface StreamToolPayload {
+  type: "tool_call";
+  tool: string;
+}
+
+interface StreamInterruptPayload {
+  type: "interrupt";
+  value: InterruptValue;
+}
+
+interface StreamDonePayload {
+  type: "done";
+}
+
+type StreamPayload =
+  | StreamTokenPayload
+  | StreamToolPayload
+  | StreamInterruptPayload
+  | StreamDonePayload
+  | { type: string;[key: string]: unknown };
+
+interface SessionMessage {
+  id?: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+  [key: string]: unknown;
+}
+
 export function useAgentStream(threadId: string, appToken: string | null) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [interrupt, setInterrupt] = useState<InterruptValue | null>(null);
@@ -28,12 +62,20 @@ export function useAgentStream(threadId: string, appToken: string | null) {
   const assistantBufferRef = useRef("");
 
   const consumeStream = useCallback(async (response: Response) => {
-    const reader = response.body!.getReader();
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Stream request failed: ${response.status} ${errorText}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error("Unable to read stream response body");
+    }
+
     const decoder = new TextDecoder();
     setIsStreaming(true);
     setActiveTool(null);
 
-    // Start an empty assistant message
     const assistantId = crypto.randomUUID();
     setMessages((prev) => [
       ...prev,
@@ -50,7 +92,6 @@ export function useAgentStream(threadId: string, appToken: string | null) {
 
         streamBuffer += decoder.decode(value, { stream: true });
         const lines = streamBuffer.split("\n");
-        // Keep the last incomplete line in the buffer
         streamBuffer = lines.pop() || "";
 
         for (const line of lines) {
@@ -59,7 +100,7 @@ export function useAgentStream(threadId: string, appToken: string | null) {
           if (!dataStr || dataStr === "[DONE]") continue;
 
           try {
-            const payload = JSON.parse(dataStr);
+            const payload = JSON.parse(dataStr) as StreamPayload;
 
             if (payload.type === "token") {
               assistantBufferRef.current += payload.token;
@@ -74,15 +115,15 @@ export function useAgentStream(threadId: string, appToken: string | null) {
                 }
                 return prev;
               });
-            } else if (payload.type === "tool_call") {
-              setActiveTool(payload.tool);
-            } else if (payload.type === "interrupt") {
-              setInterrupt(payload.value);
+            } else if (payload.type === "tool_call" && typeof (payload as StreamToolPayload).tool === "string") {
+              setActiveTool((payload as StreamToolPayload).tool);
+            } else if (payload.type === "interrupt" && typeof (payload as StreamInterruptPayload).value === "object") {
+              setInterrupt((payload as StreamInterruptPayload).value);
             } else if (payload.type === "done") {
               setActiveTool(null);
             }
-          } catch {
-            console.error("Error parsing SSE data:", dataStr);
+          } catch (error) {
+            console.error("Error parsing SSE data:", dataStr, error);
           }
         }
       }
@@ -92,24 +133,25 @@ export function useAgentStream(threadId: string, appToken: string | null) {
     }
   }, []);
 
-  // Fetch messages from the backend when threadId changes
   useEffect(() => {
     if (!threadId || !appToken) return;
-    
-    // Don't fetch if it's a completely new locally-generated thread
     if (threadId.startsWith("thread-")) return;
 
     const fetchMessages = async () => {
       try {
         const response = await clientFetchAPI(`/chat/sessions/${threadId}/messages`, appToken);
-        if (response.ok) {
-          const data = await response.json();
-          // Ensure messages have a unique id for React rendering
-          setMessages(data.map((msg: any) => ({
+        const data = (await response.json()) as SessionMessage[];
+
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid messages payload");
+        }
+
+        setMessages(
+          data.map((msg) => ({
             ...msg,
             id: msg.id || crypto.randomUUID(),
-          })));
-        }
+          }))
+        );
       } catch (error) {
         console.error("Failed to load messages:", error);
       }
@@ -124,7 +166,7 @@ export function useAgentStream(threadId: string, appToken: string | null) {
         console.error("Cannot send message: No active session (threadId is empty)");
         return;
       }
-      
+
       // Add user message immediately
       setMessages((prev) => [
         ...prev,

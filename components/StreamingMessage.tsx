@@ -17,7 +17,7 @@ export default function StreamingMessage({
         <div className="flex gap-4">
           {/* AI Avatar */}
           <div className="shrink-0 mt-1">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 8V4H8" />
                 <rect width="16" height="12" x="4" y="8" rx="2" />
@@ -45,7 +45,7 @@ export default function StreamingMessage({
               </div>
             )}
 
-            <div className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap break-words">
+            <div className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap wrap-break-word">
               {content}
               {!isComplete && <span className="typing-cursor" />}
             </div>

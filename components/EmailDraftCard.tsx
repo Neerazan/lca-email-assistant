@@ -37,7 +37,7 @@ export default function EmailDraftCard({
         <div className="flex gap-4">
           {/* AI Avatar */}
           <div className="shrink-0 mt-1">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-linear-to-br from-amber-500 to-orange-600 flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"

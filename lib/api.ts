@@ -14,9 +14,9 @@ export async function clientFetchAPI(
   options: RequestInit = {},
   isRetry = false
 ): Promise<Response> {
-  const headers = new Headers(options.headers || {})
+  const headers = new Headers((options.headers as HeadersInit) || {})
   headers.set("Content-Type", "application/json")
-  
+
   if (appToken) {
     headers.set("Authorization", `Bearer ${appToken}`)
   }
@@ -37,10 +37,10 @@ export async function clientFetchAPI(
       if (refreshRes.ok) {
         const data = await refreshRes.json()
         const newAppToken = data.access_token
-        
+
         // Save the new token so other requests can use it
         localStorage.setItem("app_token", newAppToken)
-        
+
         // Retry the original request
         return clientFetchAPI(endpoint, newAppToken, options, true)
       }
@@ -61,7 +61,7 @@ export async function getPreferences(appToken: string, googleId: string) {
   return res.json()
 }
 
-export async function savePreferences(appToken: string, googleId: string, data: any) {
+export async function savePreferences(appToken: string, googleId: string, data: unknown) {
   const res = await clientFetchAPI(`/preferences/${googleId}`, appToken, {
     method: "PUT",
     body: JSON.stringify(data),

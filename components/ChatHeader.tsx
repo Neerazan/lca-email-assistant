@@ -1,7 +1,8 @@
 "use client";
 import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ChatHeaderProps {
   onToggleSidebar: () => void;
@@ -36,6 +37,7 @@ export default function ChatHeader({
       <div className="flex items-center gap-2">
         <button
           id="sidebar-toggle"
+          type="button"
           onClick={onToggleSidebar}
           className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
           aria-label="Toggle sidebar"
@@ -61,6 +63,7 @@ export default function ChatHeader({
       <div className="flex items-center gap-3 relative" ref={dropdownRef}>
         {user && (
           <button
+            type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2 group p-0.5 rounded-full hover:bg-white/5 transition-colors"
           >
@@ -68,13 +71,16 @@ export default function ChatHeader({
               {user.email}
             </span>
             {user.picture ? (
-              <img
+              <Image
                 src={user.picture}
                 alt="Avatar"
+                width={32}
+                height={32}
+                unoptimized
                 className="w-8 h-8 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-sm"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-[11px] font-bold text-white border border-white/10 group-hover:border-white/20 transition-all shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-[11px] font-bold text-white border border-white/10 group-hover:border-white/20 transition-all shadow-sm">
                 {(user.email?.[0] || "U").toUpperCase()}
               </div>
             )}
@@ -88,7 +94,7 @@ export default function ChatHeader({
               <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">User</p>
               <p className="text-xs text-slate-300 truncate">{user?.email}</p>
             </div>
-            
+
             <Link
               href="/settings"
               onClick={() => setDropdownOpen(false)}
@@ -100,8 +106,9 @@ export default function ChatHeader({
               </svg>
               Settings
             </Link>
-            
+
             <button
+              type="button"
               onClick={() => {
                 setDropdownOpen(false);
                 signOut();
