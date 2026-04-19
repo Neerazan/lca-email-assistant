@@ -1,5 +1,7 @@
 "use client";
 import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
+import { useState, useRef, useEffect } from "react";
 
 interface ChatHeaderProps {
   onToggleSidebar: () => void;
@@ -11,6 +13,19 @@ export default function ChatHeader({
   sidebarOpen,
 }: ChatHeaderProps) {
   const { user, signOut } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header
@@ -42,39 +57,66 @@ export default function ChatHeader({
         </span>
       </div>
 
-      {/* Right: User + Sign out */}
-      <div className="flex items-center gap-2">
+      {/* Right: User Dropdown */}
+      <div className="flex items-center gap-3 relative" ref={dropdownRef}>
         {user && (
-          <>
-            <span className="text-xs text-slate-500 hidden sm:inline mr-1">
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 group p-0.5 rounded-full hover:bg-white/5 transition-colors"
+          >
+            <span className="text-xs text-slate-400 hidden sm:inline group-hover:text-slate-200 transition-colors">
               {user.email}
             </span>
             {user.picture ? (
               <img
                 src={user.picture}
                 alt="Avatar"
-                className="w-6 h-6 rounded-full"
+                className="w-8 h-8 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-sm"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-[10px] font-bold text-white">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-[11px] font-bold text-white border border-white/10 group-hover:border-white/20 transition-all shadow-sm">
                 {(user.email?.[0] || "U").toUpperCase()}
               </div>
             )}
-          </>
+          </button>
         )}
-        <button
-          id="sign-out-button"
-          onClick={() => signOut()}
-          className="flex items-center gap-1 px-2 py-1 text-xs rounded-md text-slate-500 hover:text-white hover:bg-white/10 transition-all"
-          title="Sign out"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          <span className="hidden sm:inline">Sign out</span>
-        </button>
+
+        {/* Dropdown Menu */}
+        {dropdownOpen && (
+          <div className="absolute right-0 top-full mt-2 w-48 bg-[#0d0d15] border border-white/10 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+            <div className="px-3 py-2 border-b border-white/5 mb-1 sm:hidden">
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">User</p>
+              <p className="text-xs text-slate-300 truncate">{user?.email}</p>
+            </div>
+            
+            <Link
+              href="/settings"
+              onClick={() => setDropdownOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              Settings
+            </Link>
+            
+            <button
+              onClick={() => {
+                setDropdownOpen(false);
+                signOut();
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors border-t border-white/5 mt-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Sign out
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

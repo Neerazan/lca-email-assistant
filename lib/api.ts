@@ -55,3 +55,24 @@ export async function clientFetchAPI(
 
   return response
 }
+
+export async function getPreferences(appToken: string, googleId: string) {
+  const res = await clientFetchAPI(`/preferences/${googleId}`, appToken)
+  return res.json()
+}
+
+export async function savePreferences(appToken: string, googleId: string, data: any) {
+  const res = await clientFetchAPI(`/preferences/${googleId}`, appToken, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function resetMemory(appToken: string, googleId: string) {
+  const res = await clientFetchAPI(`/preferences/${googleId}/memory`, appToken, {
+    method: "DELETE",
+  })
+  return res.json()
+}
+
