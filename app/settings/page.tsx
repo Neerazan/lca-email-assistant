@@ -84,7 +84,7 @@ export default function SettingsPage() {
 
   if (authLoading || (isAuthenticated && loading)) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0e1a] text-white font-sans">
+      <div className="flex items-center justify-center min-h-screen text-white font-sans" style={{ background: "var(--chat-bg)" }}>
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -92,7 +92,7 @@ export default function SettingsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0e1a] text-slate-200 p-4 text-center font-sans">
+      <div className="flex flex-col items-center justify-center min-h-screen text-slate-200 p-4 text-center font-sans" style={{ background: "var(--chat-bg)" }}>
         <h1 className="text-2xl font-semibold mb-6 tracking-tight">Access Denied</h1>
         <Link href="/" className="px-6 py-2.5 bg-indigo-600 rounded-full font-medium hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-900/20 active:scale-[0.98]">
           Return to Home
@@ -102,7 +102,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-slate-200 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen text-slate-200 font-sans selection:bg-indigo-500/30" style={{ background: "var(--chat-bg)" }}>
       <style dangerouslySetInnerHTML={{
         __html: `
         input, select, textarea {

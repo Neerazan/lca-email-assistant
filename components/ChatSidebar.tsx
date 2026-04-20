@@ -47,7 +47,7 @@ export default function ChatSidebar({
         transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0" : "-translate-x-full sm:-translate-x-full"}
       `}
-      style={{ background: "var(--chat-sidebar-bg)" }}
+      style={{ background: "var(--chat-bg)" }}
     >
       {/* New Chat Button */}
       <div className="p-3">
