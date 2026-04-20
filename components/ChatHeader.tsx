@@ -65,25 +65,37 @@ export default function ChatHeader({
           <button
             type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 group p-0.5 rounded-full hover:bg-white/5 transition-colors"
+            className="cursor-pointer flex items-center gap-2 group pl-5 pr-4 py-1.5 rounded-full hover:bg-white/5 transition-colors border border-white/10"
           >
-            <span className="text-xs text-slate-400 hidden sm:inline group-hover:text-slate-200 transition-colors">
-              {user.email}
+            <span className="text-sm text-slate-300 font-medium">
+              {user.name || user.email?.split('@')[0] || 'User'}
             </span>
             {user.picture ? (
-              <Image
+              <img
                 src={user.picture}
                 alt="Avatar"
-                width={32}
-                height={32}
-                unoptimized
-                className="w-8 h-8 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-sm"
+                className="w-6 h-6 rounded-full border border-white/20 object-cover"
+                referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-[11px] font-bold text-white border border-white/10 group-hover:border-white/20 transition-all shadow-sm">
+              <div className="w-6 h-6 rounded-full bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white border border-white/20">
                 {(user.email?.[0] || "U").toUpperCase()}
               </div>
             )}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-slate-400 group-hover:text-white transition-colors"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
           </button>
         )}
 
@@ -113,7 +125,7 @@ export default function ChatHeader({
                 setDropdownOpen(false);
                 signOut();
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors border-t border-white/5 mt-1"
+              className="cursor-pointer w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors border-t border-white/5 mt-1"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

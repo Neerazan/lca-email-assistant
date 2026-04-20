@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
 import LoginButton from "@/components/LoginButton";
+import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LandingPage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -23,7 +23,7 @@ export default function LandingPage() {
       <div className="orb orb-2 bottom-[10%] right-[-5%]" />
 
       <main className="relative z-10 w-full max-w-2xl px-6 text-center animate-fade-in flex flex-col items-center space-y-8">
-        
+
         <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-4">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -51,7 +51,7 @@ export default function LandingPage() {
 
         <div className="pt-8 w-full max-w-sm">
           <LoginButton />
-          
+
           <p className="mt-4 text-xs text-slate-500">
             For demonstration purposes. Requires granting basic read/send access.
           </p>
