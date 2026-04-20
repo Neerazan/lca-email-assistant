@@ -35,58 +35,38 @@ export default function EmailDraftCard({
     : [];
 
   return (
-    <div className="chat-message-row assistant animate-fade-in">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <div className="flex gap-4">
-          {/* AI Avatar */}
-          <div className="shrink-0 mt-1">
-            <div className="w-7 h-7 rounded-full bg-linear-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 9v4" />
-                <path d="M12 17h.01" />
-                <path d="M3.586 3.586A2 2 0 0 1 5 3h14a2 2 0 0 1 1.414.586l.001.001A2 2 0 0 1 21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 .586-1.414z" />
-              </svg>
-            </div>
-          </div>
+    <div className="px-4 sm:px-6 py-2 animate-fade-in">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[11px] font-medium tracking-wide text-slate-400">
+            SEND EMAIL CONFIRMATION
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-medium text-indigo-300">
+            Requires approval
+          </span>
+        </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <span className="text-xs font-semibold text-amber-400 mb-1.5 block">
-              Action Requires Approval
+        <div className="rounded-2xl border border-white/10 bg-white/4 overflow-hidden shadow-[0_6px_30px_rgba(0,0,0,0.25)]">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/[0.03]">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-indigo-300"
+            >
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+            <span className="text-sm font-medium text-slate-100">
+              Review draft before sending
             </span>
-
-            {/* Card */}
-            <div className="rounded-xl bg-white/4 border border-amber-500/20 overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-amber-500/5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#f59e0b"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-                <span className="text-sm font-semibold text-amber-300">
-                  📧 Send Email — Review Required
-                </span>
-              </div>
+          </div>
 
               {/* Review mode — show draft preview */}
               {mode === "review" && (
@@ -136,7 +116,7 @@ export default function EmailDraftCard({
                         onClick={() =>
                           onRespond([{ type: "approve" }])
                         }
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors active:scale-[0.98]"
+                        className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all active:scale-[0.98]"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +138,7 @@ export default function EmailDraftCard({
                       <button
                         id="hitl-edit-button"
                         onClick={() => setMode("edit")}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors active:scale-[0.98]"
+                        className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-200 text-sm font-medium transition-all active:scale-[0.98]"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -181,7 +161,7 @@ export default function EmailDraftCard({
                       <button
                         id="hitl-reject-button"
                         onClick={() => setMode("reject")}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 text-slate-400 hover:text-rose-300 text-sm font-medium transition-colors active:scale-[0.98]"
+                        className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-rose-500/15 hover:border-rose-500/30 text-slate-400 hover:text-rose-300 text-sm font-medium transition-all active:scale-[0.98]"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -214,7 +194,7 @@ export default function EmailDraftCard({
                     <input
                       id="hitl-edit-to"
                       type="text"
-                      className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-blue-500/50"
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
                       value={editTo}
                       onChange={(e) => setEditTo(e.target.value)}
                     />
@@ -226,7 +206,7 @@ export default function EmailDraftCard({
                     <input
                       id="hitl-edit-subject"
                       type="text"
-                      className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-blue-500/50"
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
                       value={editSubject}
                       onChange={(e) => setEditSubject(e.target.value)}
                     />
@@ -237,7 +217,7 @@ export default function EmailDraftCard({
                     </label>
                     <textarea
                       id="hitl-edit-body"
-                      className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-blue-500/50 resize-none"
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500/50 resize-none"
                       rows={5}
                       value={editBody}
                       onChange={(e) => setEditBody(e.target.value)}
@@ -261,13 +241,13 @@ export default function EmailDraftCard({
                           },
                         ])
                       }
-                      className="flex-1 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors active:scale-[0.98]"
+                      className="cursor-pointer flex-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all active:scale-[0.98]"
                     >
                       Submit Edits &amp; Send
                     </button>
                     <button
                       onClick={() => setMode("review")}
-                      className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 text-sm font-medium transition-colors hover:bg-white/10"
+                      className="cursor-pointer px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-sm font-medium transition-colors hover:bg-white/10"
                     >
                       Back
                     </button>
@@ -284,7 +264,7 @@ export default function EmailDraftCard({
                     </label>
                     <textarea
                       id="hitl-reject-reason"
-                      className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-rose-500/50 resize-none"
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 outline-none focus:border-rose-500/50 resize-none"
                       rows={3}
                       placeholder="Why are you rejecting this email?"
                       value={rejectReason}
@@ -304,21 +284,19 @@ export default function EmailDraftCard({
                           },
                         ])
                       }
-                      className="flex-1 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium transition-colors active:scale-[0.98]"
+                      className="cursor-pointer flex-1 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-medium transition-colors active:scale-[0.98]"
                     >
                       Confirm Rejection
                     </button>
                     <button
                       onClick={() => setMode("review")}
-                      className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 text-sm font-medium transition-colors hover:bg-white/10"
+                      className="cursor-pointer px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-sm font-medium transition-colors hover:bg-white/10"
                     >
                       Back
                     </button>
                   </div>
                 </div>
               )}
-            </div>
-          </div>
         </div>
       </div>
     </div>
