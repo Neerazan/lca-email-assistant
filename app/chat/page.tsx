@@ -80,33 +80,25 @@ export default function ChatPage() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Load sessions on mount or when authenticated
-  useEffect(() => {
+  const loadSessions = useCallback(async () => {
     if (!isAuthenticated || !appToken) return;
-
-    const loadSessions = async () => {
-      try {
-        const response = await clientFetchAPI("/chat/sessions", appToken);
-
-        if (response.ok) {
-          const data = await response.json();
-          if (Array.isArray(data)) {
-            setSessions(data);
-            // Do not auto-create or auto-select a session.
-            // A new session will be created when the user sends a message.
-          } else {
-            throw new Error("Backend returned invalid sessions data format");
-          }
-        } else {
-          throw new Error("Failed to load sessions");
-        }
-      } catch (error) {
-        console.warn("Sessions fetch failed", error);
+    try {
+      const response = await clientFetchAPI("/chat/sessions", appToken);
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setSessions(data);
+      } else {
+        throw new Error("Backend returned invalid sessions data format");
       }
-    };
+    } catch (error) {
+      console.warn("Sessions fetch failed", error);
+    }
+  }, [isAuthenticated, appToken]);
 
+  // Load sessions on mount / auth changes / active session switch
+  useEffect(() => {
     loadSessions();
-  }, [isAuthenticated, appToken, activeSessionId]);
+  }, [loadSessions, activeSessionId]);
 
   const handleSelectSession = useCallback(
     (id: string) => {
@@ -159,7 +151,13 @@ export default function ChatPage() {
     }
 
     await sendMessage(message, targetThreadId, attachments);
-  }, [threadId, appToken, sendMessage]);
+
+    // Refresh immediately and once more shortly after to catch lazy title updates.
+    await loadSessions();
+    window.setTimeout(() => {
+      void loadSessions();
+    }, 1500);
+  }, [threadId, appToken, sendMessage, loadSessions]);
 
   const handleDeleteSession = useCallback((id: string) => {
     setSessionToDelete(id);
