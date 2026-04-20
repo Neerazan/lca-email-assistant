@@ -10,7 +10,7 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({
   onToggleSidebar,
-  sidebarOpen,
+  sidebarOpen: _sidebarOpen,
 }: ChatHeaderProps) {
   const { user, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -38,20 +38,15 @@ export default function ChatHeader({
           id="sidebar-toggle"
           type="button"
           onClick={onToggleSidebar}
-          className="cursor-pointer eflex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
+          className="cursor-pointer flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
           aria-label="Toggle sidebar"
         >
-          {sidebarOpen ? (
+          <span className="-translate-x-[1px]">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2" />
               <path d="M9 3v18" />
             </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect width="18" height="18" x="3" y="3" rx="2" />
-              <path d="M9 3v18" />
-            </svg>
-          )}
+          </span>
         </button>
         <span className="text-sm font-medium text-slate-300">
           AI Email Assistant
