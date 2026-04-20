@@ -5,6 +5,106 @@ import { getPreferences, resetMemory, savePreferences } from "@/lib/api"
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
 
+const fieldClass =
+  "w-full rounded-xl bg-white/3 border border-white/10 px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition"
+type SelectOption = { value: string; label: string }
+
+function ThemedSelect({
+  value,
+  options,
+  onChange,
+}: {
+  value: string
+  options: SelectOption[]
+  onChange: (value: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const selected = options.find((option) => option.value === value)
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className={`${fieldClass} cursor-pointer flex items-center justify-between`}
+        onClick={() => setOpen((prev) => !prev)}
+        onBlur={() => {
+          window.setTimeout(() => setOpen(false), 120)
+        }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className="truncate">{selected?.label || "Select..."}</span>
+        <svg
+          className={`w-4 h-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-30 mt-1 w-full rounded-xl border border-white/10 bg-[#141826] shadow-[0_10px_30px_rgba(0,0,0,0.45)] p-1">
+          <ul role="listbox" className="max-h-56 overflow-y-auto">
+            {options.map((option) => {
+              const isSelected = option.value === value
+              return (
+                <li key={option.value}>
+                  <button
+                    type="button"
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                      isSelected
+                        ? "bg-indigo-500/20 text-indigo-200"
+                        : "text-slate-200 hover:bg-white/8"
+                    }`}
+                    onClick={() => {
+                      onChange(option.value)
+                      setOpen(false)
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+const labelClass =
+  "text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
+
+function Toggle({
+  checked,
+  onClick,
+}: {
+  checked: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${
+        checked ? "bg-indigo-600" : "bg-white/10"
+      }`}
+      aria-pressed={checked}
+    >
+      <div
+        className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ${
+          checked ? "translate-x-5" : ""
+        }`}
+      />
+    </button>
+  )
+}
+
 export default function SettingsPage() {
   const { appToken, user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -103,27 +203,9 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen text-slate-200 font-sans selection:bg-indigo-500/30" style={{ background: "var(--chat-bg)" }}>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        input, select, textarea {
-          background: rgba(255, 255, 255, 0.03) !important;
-          border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        }
-        input:focus, select:focus, textarea:focus {
-          border-color: rgba(99, 102, 241, 0.4) !important;
-          outline: none !important;
-          box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2) !important;
-        }
-        option {
-          background-color: #1a1a2e !important;
-          color: #f1f5f9 !important;
-        }
-      `}} />
-
-      {/* Matching Header Style */}
       <header
         className="sticky top-0 z-20 backdrop-blur-md border-b border-white/6 px-4 py-2.5 flex items-center justify-between"
-        style={{ background: "rgba(13, 13, 13, 0.8)" }}
+        style={{ background: "var(--chat-header-bg)" }}
       >
         <div className="flex items-center gap-3">
           <Link href="/chat" className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-slate-400 hover:text-white">
@@ -133,117 +215,152 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto py-10 px-6 space-y-12 animate-fade-in">
-        {message.text && (
-          <div className={`fixed bottom-10 right-10 p-4 rounded-xl border backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 animate-in slide-in-from-bottom-5 duration-300 ${message.type === 'success' ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-100' : 'bg-red-500/20 border-red-500/50 text-red-100'
-            }`}>
-            <div className="flex items-center gap-3">
-              {message.type === 'success' ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+      {message.text && (
+        <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-4 sm:right-6 z-[100] pointer-events-none">
+          <div
+            className={`pointer-events-auto flex items-start gap-3 min-w-[280px] max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-2xl border px-4 py-3 backdrop-blur-xl shadow-[0_18px_40px_rgba(0,0,0,0.45)] animate-fade-in ${
+              message.type === "success"
+                ? "bg-indigo-500/20 border-indigo-400/40 text-indigo-100"
+                : "bg-rose-500/20 border-rose-400/40 text-rose-100"
+            }`}
+          >
+            <span
+              className={`mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full ${
+                message.type === "success"
+                  ? "bg-indigo-400/20 text-indigo-100"
+                  : "bg-rose-400/20 text-rose-100"
+              }`}
+            >
+              {message.type === "success" ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
               ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m15 9-6 6" />
+                  <path d="m9 9 6 6" />
+                </svg>
               )}
-              <span className="text-sm font-medium">{message.text}</span>
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-wide opacity-80 mb-0.5">
+                {message.type === "success" ? "Success" : "Error"}
+              </p>
+              <p className="text-sm font-medium leading-relaxed break-words">
+                {message.text}
+              </p>
             </div>
+            <button
+              type="button"
+              className="cursor-pointer p-1 rounded-md hover:bg-white/10 transition-colors"
+              onClick={() => setMessage({ type: "", text: "" })}
+              aria-label="Close notification"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m18 6-12 12" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Section: AI Personality */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <main className="max-w-5xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-6 sm:space-y-8 animate-fade-in pb-24">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div>
             <h2 className="text-base font-semibold text-white">AI Personality</h2>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">Customize how the assistant drafts and responds to your emails.</p>
           </div>
 
           <div className="md:col-span-2 space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Tone</label>
-                <select
+                <label className={labelClass}>Tone</label>
+                <ThemedSelect
                   value={prefs.tone}
-                  onChange={(e) => setPrefs({ ...prefs, tone: e.target.value })}
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200"
-                >
-                  <option value="formal">Formal & Professional</option>
-                  <option value="casual">Casual & Friendly</option>
-                  <option value="concise">Direct & Concise</option>
-                  <option value="enthusiastic">Enthusiastic</option>
-                </select>
+                  onChange={(newTone) => setPrefs({ ...prefs, tone: newTone })}
+                  options={[
+                    { value: "formal", label: "Formal & Professional" },
+                    { value: "casual", label: "Casual & Friendly" },
+                    { value: "concise", label: "Direct & Concise" },
+                    { value: "enthusiastic", label: "Enthusiastic" },
+                  ]}
+                />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Length</label>
-                <select
+                <label className={labelClass}>Length</label>
+                <ThemedSelect
                   value={prefs.length}
-                  onChange={(e) => setPrefs({ ...prefs, length: e.target.value })}
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200"
-                >
-                  <option value="short">Short</option>
-                  <option value="medium">Medium</option>
-                  <option value="long">Long</option>
-                </select>
+                  onChange={(newLength) => setPrefs({ ...prefs, length: newLength })}
+                  options={[
+                    { value: "short", label: "Short" },
+                    { value: "medium", label: "Medium" },
+                    { value: "long", label: "Long" },
+                  ]}
+                />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Email Signature</label>
+              <label className={labelClass}>Email Signature</label>
               <textarea
                 value={prefs.signature}
                 onChange={(e) => setPrefs({ ...prefs, signature: e.target.value })}
                 placeholder="e.g. Best regards, Alex"
-                className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 min-h-20 resize-none"
+                className={`${fieldClass} min-h-24 resize-y`}
               />
             </div>
           </div>
         </div>
+        </section>
 
-        <div className="h-px bg-white/5" />
-
-        {/* Section: Your Context */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div>
             <h2 className="text-base font-semibold text-white">Identity & Context</h2>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">Personal information that helps the AI understand your role and relationships.</p>
           </div>
 
           <div className="md:col-span-2 space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Full Name</label>
+                <label className={labelClass}>Full Name</label>
                 <input
                   type="text"
                   value={prefs.full_name}
                   onChange={(e) => setPrefs({ ...prefs, full_name: e.target.value })}
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200"
+                  className={fieldClass}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Role Title</label>
+                <label className={labelClass}>Role Title</label>
                 <input
                   type="text"
                   value={prefs.role_title}
                   onChange={(e) => setPrefs({ ...prefs, role_title: e.target.value })}
-                  className="w-full rounded-lg px-3 py-2 text-sm text-slate-200"
+                  className={fieldClass}
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Important Relationships</label>
+              <label className={labelClass}>Important Relationships</label>
               <textarea
                 value={prefs.relationships}
                 onChange={(e) => setPrefs({ ...prefs, relationships: e.target.value })}
                 placeholder="e.g. Sarah is my manager, Team at Vertex are my main clients."
-                className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 min-h-20 resize-none"
+                className={`${fieldClass} min-h-24 resize-y`}
               />
             </div>
           </div>
         </div>
+        </section>
 
-        <div className="h-px bg-white/5" />
-
-        {/* Section: AI Memory & Privacy */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div>
             <h2 className="text-base font-semibold text-white">Memory & Behavior</h2>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">Control how the assistant learns from your interactions.</p>
@@ -255,12 +372,7 @@ export default function SettingsPage() {
                 <h3 className="text-sm font-medium text-slate-200">Active Learning</h3>
                 <p className="text-[11px] text-slate-500">Allow AI to remember facts and habits mentioned in chats.</p>
               </div>
-              <button
-                onClick={() => setPrefs({ ...prefs, ai_memory_enabled: !prefs.ai_memory_enabled })}
-                className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${prefs.ai_memory_enabled ? 'bg-indigo-600' : 'bg-white/10'}`}
-              >
-                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ${prefs.ai_memory_enabled ? 'translate-x-5' : ''}`} />
-              </button>
+              <Toggle checked={prefs.ai_memory_enabled} onClick={() => setPrefs({ ...prefs, ai_memory_enabled: !prefs.ai_memory_enabled })} />
             </div>
 
             <div className="flex items-center justify-between p-4 bg-white/2 border border-white/5 rounded-2xl">
@@ -268,49 +380,45 @@ export default function SettingsPage() {
                 <h3 className="text-sm font-medium text-slate-200">Clarification Mode</h3>
                 <p className="text-[11px] text-slate-500">Ask clarifying questions instead of guessing when unsure.</p>
               </div>
-              <button
-                onClick={() => setPrefs({ ...prefs, ask_clarifying_questions: !prefs.ask_clarifying_questions })}
-                className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${prefs.ask_clarifying_questions ? 'bg-indigo-600' : 'bg-white/10'}`}
-              >
-                <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 ${prefs.ask_clarifying_questions ? 'translate-x-5' : ''}`} />
-              </button>
+              <Toggle checked={prefs.ask_clarifying_questions} onClick={() => setPrefs({ ...prefs, ask_clarifying_questions: !prefs.ask_clarifying_questions })} />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Custom Instructions</label>
+              <label className={labelClass}>Custom Instructions</label>
               <textarea
                 value={prefs.custom_instructions}
                 onChange={(e) => setPrefs({ ...prefs, custom_instructions: e.target.value })}
                 placeholder="e.g. Always use British English, Never use exclamation marks."
-                className="w-full rounded-lg px-3 py-2 text-sm text-slate-200 min-h-25 resize-none"
+                className={`${fieldClass} min-h-28 resize-y`}
               />
             </div>
 
-            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+            <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <span className="text-xs text-slate-500 italic">This will permanently clear all facts learned by the AI.</span>
               <button
                 onClick={handleResetMemory}
-                className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-all text-xs font-semibold active:scale-[0.98]"
+                className="cursor-pointer px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all text-xs font-semibold active:scale-[0.98]"
               >
                 Reset AI Memory
               </button>
             </div>
           </div>
         </div>
+        </section>
 
-        <div className="h-px bg-white/5" />
-
-        <div className="pt-4 flex justify-end">
+        <div className="sticky bottom-3 z-10 flex justify-end">
+          <div className="rounded-2xl border border-white/10 bg-[#0d0d15]/80 backdrop-blur-sm px-3 py-2">
           <button
             onClick={() => handleSave()}
             disabled={saving}
-            className="cursor-pointer px-8 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-white/5 disabled:text-slate-600 rounded-md text-sm font-semibold text-white transition-all active:scale-[0.98] flex items-center gap-2"
+            className="cursor-pointer px-5 sm:px-8 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/5 disabled:text-slate-600 rounded-xl text-sm font-semibold text-white transition-all active:scale-[0.98] flex items-center gap-2"
           >
             {saving && (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             )}
             <span>{saving ? "Saving..." : "Save Changes"}</span>
           </button>
+          </div>
         </div>
       </main>
     </div>

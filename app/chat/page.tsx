@@ -13,7 +13,10 @@ export default function ChatPage() {
   const { user, appToken, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 640;
+  });
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
@@ -64,6 +67,18 @@ export default function ChatPage() {
       router.push("/");
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth < 640) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // Load sessions on mount or when authenticated
   useEffect(() => {
@@ -200,6 +215,14 @@ export default function ChatPage() {
         onDeleteSession={handleDeleteSession}
         isOpen={sidebarOpen}
       />
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar overlay"
+          onClick={() => setSidebarOpen(false)}
+          className="sm:hidden fixed inset-0 z-20 bg-black/40 backdrop-blur-[1px]"
+        />
+      )}
 
       <div className="flex-1 flex flex-col min-w-0 relative">
         <ChatHeader

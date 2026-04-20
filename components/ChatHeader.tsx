@@ -64,9 +64,9 @@ export default function ChatHeader({
           <button
             type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="cursor-pointer flex items-center gap-2 group pl-5 pr-4 py-1.5 rounded-full hover:bg-white/5 transition-colors border border-white/10"
+            className="cursor-pointer flex items-center gap-2 group pl-2 sm:pl-5 pr-2 sm:pr-4 py-1.5 rounded-full hover:bg-white/5 transition-colors border border-white/10 max-w-[180px] sm:max-w-none"
           >
-            <span className="text-sm text-slate-300 font-medium">
+            <span className="hidden sm:block text-sm text-slate-300 font-medium truncate">
               {user.name || user.email?.split('@')[0] || 'User'}
             </span>
             {user.picture ? (

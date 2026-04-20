@@ -269,3 +269,13 @@ body {
 .dot-pulse span:nth-child(3) {
   animation-delay: 0.4s;
 }
+
+/* Settings select dropdown readability */
+.themed-select {
+  color-scheme: dark;
+}
+
+.themed-select option {
+  background-color: #111827;
+  color: #e2e8f0;
+}
