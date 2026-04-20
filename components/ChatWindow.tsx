@@ -14,6 +14,7 @@ interface ChatWindowProps {
   interrupt: InterruptValue | null;
   onSendMessage: (content: string) => void;
   onResume: (decisions: Record<string, unknown>[]) => void;
+  onStop: () => void;
 }
 
 export default function ChatWindow({
@@ -24,6 +25,7 @@ export default function ChatWindow({
   interrupt,
   onSendMessage,
   onResume,
+  onStop,
 }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -39,7 +41,11 @@ export default function ChatWindow({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || isStreaming || !!interrupt) return;
+    if (isStreaming) {
+      onStop();
+      return;
+    }
+    if (!inputMessage.trim() || !!interrupt) return;
     onSendMessage(inputMessage);
     setInputMessage("");
     if (textareaRef.current) {
@@ -62,7 +68,7 @@ export default function ChatWindow({
   };
 
   const inputDisabled = isStreaming || !!interrupt;
-  const canSend = inputMessage.trim() && !inputDisabled;
+  const canSend = (inputMessage.trim() && !inputDisabled) || isStreaming;
 
   return (
     <div className="flex flex-col h-full" style={{ background: "var(--chat-bg)" }}>
@@ -160,7 +166,7 @@ export default function ChatWindow({
             <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-3 pb-2.5">
               {/* Left: hint text */}
               <span className="text-[10px] text-slate-600 select-none hidden sm:block">
-                {interrupt ? "Approve or reject above" : "Shift+Enter for new line"}
+                {interrupt ? "Approve or reject above" : isStreaming ? "Click to stop responding" : "Shift+Enter for new line"}
               </span>
 
               {/* Right: send button */}
@@ -170,11 +176,12 @@ export default function ChatWindow({
                 onClick={handleSubmit as any}
                 disabled={!canSend}
                 className={`
-                  ml-auto flex items-center justify-center rounded-xl transition-all duration-200
+                  cursor-pointer ml-auto flex items-center justify-center rounded-xl transition-all duration-200
                   ${canSend
                     ? "w-8 h-8 bg-indigo-600 hover:bg-indigo-500 text-white shadow-md hover:shadow-indigo-500/30 scale-100 hover:scale-105"
                     : "w-8 h-8 bg-white/5 text-slate-600 cursor-not-allowed"
                   }
+                  ${isStreaming ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30" : ""}
                 `}
               >
                 {isStreaming ? (

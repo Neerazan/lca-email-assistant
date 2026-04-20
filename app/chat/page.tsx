@@ -46,6 +46,7 @@ export default function ChatPage() {
     activeTool,
     sendMessage,
     resume,
+    stop,
     clearMessages,
   } = useAgentStream(threadId, appToken);
 
@@ -208,9 +209,11 @@ export default function ChatPage() {
             interrupt={interrupt}
             onSendMessage={handleSendMessage}
             onResume={resume}
+            onStop={stop}
           />
         </main>
       </div>
+
 
       {/* Delete Confirmation Modal */}
       {sessionToDelete && (

@@ -54,7 +54,7 @@ export default function ChatSidebar({
         <button
           id="new-chat-button"
           onClick={onNewChat}
-          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg
+          className="cursor-pointer w-full flex items-center gap-2 px-3 py-2.5 rounded-lg
             border border-white/10 bg-white/3 hover:bg-white/6
             text-slate-300 text-sm font-medium
             transition-colors active:scale-[0.98]"

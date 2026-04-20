@@ -44,7 +44,7 @@ type StreamPayload =
   | StreamToolPayload
   | StreamInterruptPayload
   | StreamDonePayload
-  | { type: string;[key: string]: unknown };
+  | { type: string; [key: string]: unknown };
 
 interface SessionMessage {
   id?: string;
@@ -61,6 +61,7 @@ export function useAgentStream(threadId: string, appToken: string | null) {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const assistantBufferRef = useRef("");
   const skipFetchRef = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const consumeStream = useCallback(async (response: Response) => {
     if (!response.ok) {
@@ -128,9 +129,16 @@ export function useAgentStream(threadId: string, appToken: string | null) {
           }
         }
       }
+    } catch (error) {
+      if ((error as Error).name === "AbortError") {
+        console.log("Stream aborted by user");
+      } else {
+        console.error("Stream consumption error:", error);
+      }
     } finally {
       setIsStreaming(false);
       setActiveTool(null);
+      abortControllerRef.current = null;
     }
   }, []);
 
@@ -166,6 +174,15 @@ export function useAgentStream(threadId: string, appToken: string | null) {
     fetchMessages();
   }, [threadId, appToken]);
 
+  const stop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsStreaming(false);
+      setActiveTool(null);
+    }
+  }, []);
+
   const sendMessage = useCallback(
     async (message: string, overrideThreadId?: string) => {
       const targetThreadId = overrideThreadId || threadId;
@@ -190,12 +207,29 @@ export function useAgentStream(threadId: string, appToken: string | null) {
       ]);
       setInterrupt(null);
 
-      const res = await clientFetchAPI("/chat/stream", appToken, {
-        method: "POST",
-        body: JSON.stringify({ message, thread_id: targetThreadId }),
-      });
+      // Create new AbortController for this request
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      await consumeStream(res);
+      try {
+        const res = await clientFetchAPI("/chat/stream", appToken, {
+          method: "POST",
+          body: JSON.stringify({ message, thread_id: targetThreadId }),
+          signal: controller.signal,
+        });
+
+        await consumeStream(res);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          console.log("Request aborted by user");
+        } else {
+          console.error("Failed to send message:", error);
+        }
+      } finally {
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+      }
     },
     [threadId, appToken, consumeStream]
   );
@@ -204,15 +238,31 @@ export function useAgentStream(threadId: string, appToken: string | null) {
     async (decisions: Record<string, unknown>[]) => {
       setInterrupt(null);
 
-      const res = await clientFetchAPI("/chat/resume", appToken, {
-        method: "POST",
-        body: JSON.stringify({
-          thread_id: threadId,
-          decisions,
-        }),
-      });
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      await consumeStream(res);
+      try {
+        const res = await clientFetchAPI("/chat/resume", appToken, {
+          method: "POST",
+          body: JSON.stringify({
+            thread_id: threadId,
+            decisions,
+          }),
+          signal: controller.signal,
+        });
+
+        await consumeStream(res);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          console.log("Resume aborted by user");
+        } else {
+          console.error("Failed to resume:", error);
+        }
+      } finally {
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+      }
     },
     [threadId, appToken, consumeStream]
   );
@@ -222,5 +272,14 @@ export function useAgentStream(threadId: string, appToken: string | null) {
     setInterrupt(null);
   }, []);
 
-  return { messages, interrupt, isStreaming, activeTool, sendMessage, resume, clearMessages };
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  return { messages, interrupt, isStreaming, activeTool, sendMessage, resume, stop, clearMessages };
 }
