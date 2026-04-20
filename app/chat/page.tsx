@@ -113,7 +113,7 @@ export default function ChatPage() {
 
   const handleSendMessage = useCallback(async (message: string) => {
     let targetThreadId = threadId;
-    
+
     // If there's no active session, create one first
     if (!targetThreadId) {
       try {

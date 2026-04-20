@@ -40,10 +40,8 @@ export default function ChatWindow({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() || isStreaming || !!interrupt) return;
-
     onSendMessage(inputMessage);
     setInputMessage("");
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
@@ -64,6 +62,7 @@ export default function ChatWindow({
   };
 
   const inputDisabled = isStreaming || !!interrupt;
+  const canSend = inputMessage.trim() && !inputDisabled;
 
   return (
     <div className="flex flex-col h-full" style={{ background: "var(--chat-bg)" }}>
@@ -78,13 +77,10 @@ export default function ChatWindow({
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">
-                How can I help you today?
-              </h2>
+              <h2 className="text-xl font-semibold text-white mb-2">How can I help you today?</h2>
               <p className="text-sm text-slate-400 mb-8 leading-relaxed">
                 I can read, summarize, and draft replies to your emails.
               </p>
-
               <div className="grid gap-2 sm:grid-cols-2">
                 {[
                   { icon: "📬", text: "Any new emails today?" },
@@ -94,9 +90,8 @@ export default function ChatWindow({
                 ].map((suggestion, i) => (
                   <button
                     key={i}
-                    id={`suggestion-${i}`}
                     type="button"
-                    className="text-left text-sm p-3.5 rounded-xl border border-white/10 bg-white/3 hover:bg-white/6 text-slate-300 transition-colors group cursor-pointer"
+                    className="text-left text-sm p-3.5 rounded-xl border border-white/10 bg-white/3 hover:bg-white/6 text-slate-300 transition-colors cursor-pointer"
                     onClick={() => onSendMessage(suggestion.text)}
                   >
                     <span className="mr-2">{suggestion.icon}</span>
@@ -107,45 +102,41 @@ export default function ChatWindow({
             </div>
           </div>
         ) : (
-          <div>
+          <div className="pt-6 pb-2">
             {messages
               .filter((msg, idx) => {
-                // Skip the last assistant message if we're currently streaming
-                if (isStreaming && idx === messages.length - 1 && msg.role === "assistant") {
-                  return false;
-                }
+                if (isStreaming && idx === messages.length - 1 && msg.role === "assistant") return false;
                 return true;
               })
               .map((message) => (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                />
+                <MessageBubble key={message.id} message={message} />
               ))}
 
             {isStreaming && !interrupt && (
               <StreamingMessage content={streamingContent} tool={streamingTool} isComplete={false} />
             )}
 
-            {/* HITL Approval Card */}
             {interrupt && (
-              <EmailDraftCard
-                interrupt={interrupt}
-                onRespond={onResume}
-              />
+              <EmailDraftCard interrupt={interrupt} onRespond={onResume} />
             )}
 
-            <div ref={messagesEndRef} className="h-8" />
+            <div ref={messagesEndRef} className="h-4" />
           </div>
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="shrink-0 p-4 pb-6">
+      {/* ── Enhanced Input Area ── */}
+      <div className="shrink-0 px-4 pb-5 pt-3">
         <div className="max-w-3xl mx-auto">
-          <form
-            onSubmit={handleSubmit}
-            className="relative rounded-2xl border border-white/10 bg-(--chat-input-bg) focus-within:border-indigo-500/50 transition-colors shadow-lg"
+          <div
+            className="relative rounded-2xl border transition-all duration-200 shadow-lg"
+            style={{
+              background: "rgba(255,255,255,0.04)",
+              borderColor: inputMessage ? "rgba(99,102,241,0.5)" : "rgba(255,255,255,0.08)",
+              boxShadow: inputMessage
+                ? "0 0 0 3px rgba(99,102,241,0.08), 0 4px 24px rgba(0,0,0,0.3)"
+                : "0 4px 24px rgba(0,0,0,0.2)",
+            }}
           >
             <textarea
               ref={textareaRef}
@@ -153,44 +144,59 @@ export default function ChatWindow({
               value={inputMessage}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder={interrupt ? "Waiting for your approval..." : "Message AI Email Assistant..."}
+              placeholder={
+                interrupt
+                  ? "Waiting for your approval above..."
+                  : isStreaming
+                    ? "AI is responding..."
+                    : "Message AI Email Assistant..."
+              }
               rows={1}
               className="w-full resize-none bg-transparent text-sm text-white placeholder-slate-500 px-4 pt-3.5 pb-12 focus:outline-none max-h-40"
               disabled={inputDisabled}
             />
 
-            <div className="absolute bottom-2 right-2 flex items-center gap-2">
-              <span className="text-[10px] text-slate-600 mr-1 hidden sm:inline">
-                Shift+Enter for new line
+            {/* Bottom bar */}
+            <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-3 pb-2.5">
+              {/* Left: hint text */}
+              <span className="text-[10px] text-slate-600 select-none hidden sm:block">
+                {interrupt ? "Approve or reject above" : "Shift+Enter for new line"}
               </span>
+
+              {/* Right: send button */}
               <button
                 id="send-button"
-                type="submit"
-                disabled={!inputMessage.trim() || inputDisabled}
+                type="button"
+                onClick={handleSubmit as any}
+                disabled={!canSend}
                 className={`
-                  w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200
-                  ${inputMessage.trim() && !inputDisabled
-                    ? "bg-indigo-600 hover:bg-indigo-500 text-white"
-                    : "bg-white/5 text-slate-600 cursor-not-allowed"}
+                  ml-auto flex items-center justify-center rounded-xl transition-all duration-200
+                  ${canSend
+                    ? "w-8 h-8 bg-indigo-600 hover:bg-indigo-500 text-white shadow-md hover:shadow-indigo-500/30 scale-100 hover:scale-105"
+                    : "w-8 h-8 bg-white/5 text-slate-600 cursor-not-allowed"
+                  }
                 `}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 19V5" />
-                  <path d="m5 12 7-7 7 7" />
-                </svg>
+                {isStreaming ? (
+                  /* Stop / loading ring */
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                  </svg>
+                ) : (
+                  /* Up arrow */
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 19V5" />
+                    <path d="m5 12 7-7 7 7" />
+                  </svg>
+                )}
               </button>
             </div>
-          </form>
+          </div>
+
+          {/* Footer note */}
+          <p className="text-center text-[10px] text-slate-700 mt-2 select-none">
+            AI can make mistakes. Double-check important info.
+          </p>
         </div>
       </div>
     </div>
