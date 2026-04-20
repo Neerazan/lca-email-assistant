@@ -22,18 +22,18 @@ export default function LoginButton() {
     <button
       onClick={() => login()}
       disabled={isLoading}
-      className="group relative flex w-full items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-all overflow-hidden cursor-pointer disabled:opacity-50"
+      className="group relative flex w-full items-center justify-center gap-3 px-6 py-3.5 rounded-xl font-semibold text-white bg-white/5 border border-white/12 hover:bg-white/10 transition-all overflow-hidden cursor-pointer disabled:opacity-50 shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
     >
-      <div className="absolute inset-0 bg-linear-to-r from-indigo-500/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm">
-        <svg viewBox="0 0 46 46" className="w-5 h-5" aria-hidden="true">
-          <path fill="#4285F4" d="M23 9.5c3.45 0 6.17 1.19 8.03 2.94l5.9-5.9C33.86 3.28 28.57 1 23 1 14.7 1 7.57 5.94 4.08 13.84l6.85 5.31C12.86 13.36 17.5 9.5 23 9.5z" />
-          <path fill="#34A853" d="M9.93 22.57c-.43-1.28-.68-2.65-.68-4.07s.25-2.79.68-4.07L3.08 9.12C1.12 12.96 0 17.35 0 22s1.12 9.04 3.08 12.88l6.85-5.31z" />
-          <path fill="#FBBC05" d="M23 42.5c5.57 0 10.86-1.19 14.96-3.27l-6.85-5.31c-2.16 1.43-4.92 2.27-8.11 2.27-5.5 0-10.14-3.86-11.79-9.45l-6.85 5.31C7.57 40.06 14.7 45 23 45z" />
-          <path fill="#EA4335" d="M46 22c0-1.44-.14-2.84-.39-4.19H23v8.01h12.5c-.54 2.87-2.13 5.29-4.55 6.92l7.17 5.56C43.78 35.25 46 29.99 46 22z" />
+      <div className="absolute inset-0 bg-linear-to-r from-indigo-500/20 to-indigo-400/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <span className="relative z-10 flex items-center justify-center w-7 h-7 rounded-md bg-white shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
+        <svg viewBox="0 0 18 18" className="w-4.5 h-4.5" aria-hidden="true">
+          <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.12-.84 2.07-1.8 2.71v2.25h2.91c1.7-1.57 2.69-3.89 2.69-6.6z" />
+          <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.2l-2.91-2.25c-.81.54-1.85.86-3.05.86-2.35 0-4.33-1.59-5.03-3.72H.96v2.33C2.44 15.96 5.48 18 9 18z" />
+          <path fill="#FBBC05" d="M3.97 10.69A5.41 5.41 0 0 1 3.69 9c0-.59.1-1.16.28-1.69V4.98H.96A8.99 8.99 0 0 0 0 9c0 1.45.35 2.82.96 4.02l3.01-2.33z" />
+          <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.43 1.33l2.57-2.57C13.46.89 11.43 0 9 0 5.48 0 2.44 2.04.96 4.98l3.01 2.33C4.67 5.17 6.65 3.58 9 3.58z" />
         </svg>
       </span>
-      <span className="relative z-10">{isLoading ? "Loading..." : "Continue with Google"}</span>
+      <span className="relative z-10 tracking-[0.01em]">{isLoading ? "Connecting..." : "Continue with Google"}</span>
     </button>
   )
 }

@@ -3,20 +3,19 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Terms of Service — AI Email Assistant",
-  description:
-    "Terms of Service for AI Email Assistant, a portfolio demonstration project.",
+  description: "Terms of Service for AI Email Assistant.",
 };
 
 export default function TermsPage() {
   const lastUpdated = "April 9, 2026";
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-slate-300 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0d0d0d] text-slate-300 relative overflow-hidden">
       {/* Subtle background orb */}
-      <div className="orb orb-1 top-[-20%] left-[-15%] opacity-20" />
+      <div className="orb orb-1 top-[-20%] left-[-15%] opacity-10" />
 
       {/* Navigation */}
-      <nav className="relative z-10 flex items-center justify-between max-w-3xl mx-auto px-6 py-6">
+      <nav className="relative z-10 flex items-center justify-between max-w-4xl mx-auto px-4 sm:px-6 py-5 border-b border-white/6">
         <Link
           href="/"
           className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm"
@@ -35,8 +34,9 @@ export default function TermsPage() {
       </nav>
 
       {/* Content */}
-      <main className="relative z-10 max-w-3xl mx-auto px-6 pb-20">
-        <header className="mb-12">
+      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 pb-20">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <header className="mb-10">
           <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
             Terms of Service
           </h1>
@@ -50,12 +50,9 @@ export default function TermsPage() {
             </h2>
             <p>
               AI Email Assistant (&quot;the Service&quot;) is a{" "}
-              <strong className="text-slate-200">
-                portfolio demonstration project
-              </strong>{" "}
-              that showcases the use of AI agents (powered by LangGraph) to
-              interact with Gmail. It is not intended for production use at
-              scale. By using this Service, you agree to these Terms.
+              Gmail assistant powered by LangGraph to help with reading,
+              summarizing, and drafting email replies. By using this Service,
+              you agree to these Terms.
             </p>
           </section>
 
@@ -172,6 +169,7 @@ export default function TermsPage() {
               the project&apos;s GitHub repository.
             </p>
           </section>
+        </div>
         </div>
       </main>
     </div>

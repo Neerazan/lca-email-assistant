@@ -38,7 +38,7 @@ export default function ChatHeader({
           id="sidebar-toggle"
           type="button"
           onClick={onToggleSidebar}
-          className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
+          className="cursor-pointer eflex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
           aria-label="Toggle sidebar"
         >
           {sidebarOpen ? (

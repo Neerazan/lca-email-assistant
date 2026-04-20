@@ -12,6 +12,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "AI Email Assistant",
   description: "Manage your Gmail inbox through natural language chat.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
