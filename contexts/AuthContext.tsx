@@ -119,6 +119,33 @@ export function AuthContextProvider({ children }: { children: ReactNode }) {
     attemptSilentRefresh()
   }, [attemptSilentRefresh])
 
+  useEffect(() => {
+    const onTokenRefreshed = (event: Event) => {
+      const custom = event as CustomEvent<{ token?: string }>
+      const token = custom.detail?.token
+      if (token) {
+        handleToken(token)
+      }
+    }
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== "app_token") return
+      if (event.newValue) {
+        handleToken(event.newValue)
+      } else {
+        setAppToken(null)
+        setUser(null)
+      }
+    }
+
+    window.addEventListener("app-token-refreshed", onTokenRefreshed as EventListener)
+    window.addEventListener("storage", onStorage)
+    return () => {
+      window.removeEventListener("app-token-refreshed", onTokenRefreshed as EventListener)
+      window.removeEventListener("storage", onStorage)
+    }
+  }, [])
+
   const loginWithCode = async (code: string) => {
     setIsLoading(true)
     try {

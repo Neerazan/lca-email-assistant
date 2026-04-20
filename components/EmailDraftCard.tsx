@@ -30,6 +30,9 @@ export default function EmailDraftCard({
 
   const allowed = config.allowedDecisions;
   const args = action.args as Record<string, unknown>;
+  const attachmentArgs = Array.isArray(args.attachments)
+    ? (args.attachments as unknown[])
+    : [];
 
   return (
     <div className="chat-message-row assistant animate-fade-in">
@@ -108,6 +111,21 @@ export default function EmailDraftCard({
                         {String(args.message ?? "")}
                       </p>
                     </div>
+                    {attachmentArgs.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-white/10">
+                        <p className="text-xs text-slate-500 mb-2">Attachments</p>
+                        <div className="flex flex-wrap gap-2">
+                          {attachmentArgs.map((item, idx) => (
+                            <span
+                              key={`${String(item)}-${idx}`}
+                              className="rounded-full border border-white/15 bg-white/5 px-2 py-1 text-xs text-slate-300"
+                            >
+                              {String(item)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action buttons */}

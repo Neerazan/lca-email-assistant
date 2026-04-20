@@ -18,6 +18,14 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   created_at: string;
+  metadata?: {
+    attachments?: {
+      id: string;
+      filename?: string;
+      mime_type?: string;
+      size_bytes?: number;
+    }[];
+  };
 }
 
 interface StreamTokenPayload {
@@ -51,6 +59,7 @@ interface SessionMessage {
   role: "user" | "assistant";
   content: string;
   created_at: string;
+  metadata?: Message["metadata"];
   [key: string]: unknown;
 }
 
@@ -184,7 +193,15 @@ export function useAgentStream(threadId: string, appToken: string | null) {
   }, []);
 
   const sendMessage = useCallback(
-    async (message: string, overrideThreadId?: string) => {
+    async (
+      message: string,
+      overrideThreadId?: string,
+      attachments?: {
+        attachment_id: string;
+        filename?: string;
+        mime_type?: string;
+      }[]
+    ) => {
       const targetThreadId = overrideThreadId || threadId;
       if (!targetThreadId) {
         console.error("Cannot send message: No active session (threadId is empty)");
@@ -203,6 +220,13 @@ export function useAgentStream(threadId: string, appToken: string | null) {
           content: message,
           id: crypto.randomUUID(),
           created_at: new Date().toISOString(),
+          metadata: {
+            attachments: (attachments || []).map((item) => ({
+              id: item.attachment_id,
+              filename: item.filename,
+              mime_type: item.mime_type,
+            })),
+          },
         },
       ]);
       setInterrupt(null);
@@ -214,7 +238,11 @@ export function useAgentStream(threadId: string, appToken: string | null) {
       try {
         const res = await clientFetchAPI("/chat/stream", appToken, {
           method: "POST",
-          body: JSON.stringify({ message, thread_id: targetThreadId }),
+          body: JSON.stringify({
+            message,
+            thread_id: targetThreadId,
+            attachments: attachments || [],
+          }),
           signal: controller.signal,
         });
 

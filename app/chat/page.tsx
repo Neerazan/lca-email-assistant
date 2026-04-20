@@ -112,7 +112,14 @@ export default function ChatPage() {
     }
   }, [clearMessages]);
 
-  const handleSendMessage = useCallback(async (message: string) => {
+  const handleSendMessage = useCallback(async (
+    message: string,
+    attachments?: {
+      attachment_id: string;
+      filename?: string;
+      mime_type?: string;
+    }[]
+  ) => {
     let targetThreadId = threadId;
 
     // If there's no active session, create one first
@@ -136,7 +143,7 @@ export default function ChatPage() {
       }
     }
 
-    await sendMessage(message, targetThreadId);
+    await sendMessage(message, targetThreadId, attachments);
   }, [threadId, appToken, sendMessage]);
 
   const handleDeleteSession = useCallback((id: string) => {
@@ -210,6 +217,8 @@ export default function ChatPage() {
             onSendMessage={handleSendMessage}
             onResume={resume}
             onStop={stop}
+            threadId={threadId}
+            appToken={appToken}
           />
         </main>
       </div>
