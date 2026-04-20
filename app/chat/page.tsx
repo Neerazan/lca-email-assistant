@@ -28,8 +28,12 @@ export default function ChatPage() {
 
   // Sync URL when activeSessionId changes
   useEffect(() => {
-    if (activeSessionId && typeof window !== "undefined") {
-      window.history.replaceState(null, "", `/chat?session=${activeSessionId}`);
+    if (typeof window !== "undefined") {
+      if (activeSessionId) {
+        window.history.replaceState(null, "", `/chat?session=${activeSessionId}`);
+      } else {
+        window.history.replaceState(null, "", `/chat`);
+      }
     }
   }, [activeSessionId]);
 
@@ -72,23 +76,8 @@ export default function ChatPage() {
           const data = await response.json();
           if (Array.isArray(data)) {
             setSessions(data);
-            if (data.length > 0 && !activeSessionId) {
-              setActiveSessionId(data[0].id);
-            } else if (data.length === 0 && !activeSessionId) {
-              // Automatically create a real session if none exist
-              try {
-                const createRes = await clientFetchAPI("/chat/sessions", appToken, {
-                  method: "POST",
-                });
-                if (createRes.ok) {
-                  const newSession = await createRes.json();
-                  setSessions([newSession]);
-                  setActiveSessionId(newSession.id);
-                }
-              } catch (e) {
-                console.error("Failed to auto-create session", e);
-              }
-            }
+            // Do not auto-create or auto-select a session.
+            // A new session will be created when the user sends a message.
           } else {
             throw new Error("Backend returned invalid sessions data format");
           }
@@ -114,26 +103,40 @@ export default function ChatPage() {
     [clearMessages]
   );
 
-  const handleNewChat = useCallback(async () => {
-    try {
-      const response = await clientFetchAPI("/chat/sessions", appToken, {
-        method: "POST",
-      });
-      if (response.ok) {
-        const newSession = await response.json();
-        setSessions((prev) => [newSession, ...prev]);
-        setActiveSessionId(newSession.id);
-        clearMessages();
-        if (window.innerWidth < 640) {
-          setSidebarOpen(false);
-        }
-      } else {
-        console.error("Failed to create new session");
-      }
-    } catch (error) {
-      console.error("Error creating session:", error);
+  const handleNewChat = useCallback(() => {
+    setActiveSessionId(null);
+    clearMessages();
+    if (window.innerWidth < 640) {
+      setSidebarOpen(false);
     }
-  }, [appToken, clearMessages]);
+  }, [clearMessages]);
+
+  const handleSendMessage = useCallback(async (message: string) => {
+    let targetThreadId = threadId;
+    
+    // If there's no active session, create one first
+    if (!targetThreadId) {
+      try {
+        const response = await clientFetchAPI("/chat/sessions", appToken, {
+          method: "POST",
+        });
+        if (response.ok) {
+          const newSession = await response.json();
+          setSessions((prev) => [newSession, ...prev]);
+          setActiveSessionId(newSession.id);
+          targetThreadId = newSession.id;
+        } else {
+          console.error("Failed to create new session");
+          return;
+        }
+      } catch (error) {
+        console.error("Error creating session:", error);
+        return;
+      }
+    }
+
+    await sendMessage(message, targetThreadId);
+  }, [threadId, appToken, sendMessage]);
 
   const handleDeleteSession = useCallback((id: string) => {
     setSessionToDelete(id);
@@ -203,7 +206,7 @@ export default function ChatPage() {
             streamingTool={activeTool}
             isStreaming={isStreaming}
             interrupt={interrupt}
-            onSendMessage={sendMessage}
+            onSendMessage={handleSendMessage}
             onResume={resume}
           />
         </main>

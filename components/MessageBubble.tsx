@@ -1,5 +1,8 @@
 "use client";
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
@@ -49,7 +52,39 @@ export default function MessageBubble({
               {isUser ? "You" : "Assistant"}
             </span>
             <div className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap wrap-break-word">
-              {message.content}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  p: ({ children, ...props }) => (
+                    <div className="mb-2 last:mb-0" {...props}>{children}</div>
+                  ),
+                  a: ({ children, ...props }) => (
+                    <a className="text-indigo-300 hover:text-indigo-100 underline break-all" {...props}>{children}</a>
+                  ),
+                  code: (props: any) => {
+                    const { inline, className, children, ...rest } = props;
+                    return inline ? (
+                      <code className="rounded bg-white/10 px-1 py-0.5 text-slate-100" {...rest}>
+                        {children}
+                      </code>
+                    ) : (
+                      <pre className="my-3 overflow-x-auto rounded-xl border border-white/10 bg-[#0f172a] p-3 text-sm">
+                        <code className="whitespace-pre-wrap wrap-break-word" {...rest}>
+                          {children}
+                        </code>
+                      </pre>
+                    );
+                  },
+                  li: ({ children, ...props }) => (
+                    <li className="ml-5 list-disc marker:text-slate-400 mb-1" {...props}>{children}</li>
+                  ),
+                  blockquote: ({ children, ...props }) => (
+                    <blockquote className="pl-4 border-l-2 border-slate-700 text-slate-300 italic my-3" {...props}>{children}</blockquote>
+                  ),
+                }}
+              >
+                {message.content || ""}
+              </ReactMarkdown>
             </div>
           </div>
         </div>

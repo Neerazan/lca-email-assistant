@@ -1,7 +1,21 @@
+"use client"
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import LoginButton from "@/components/LoginButton";
 import Link from "next/link";
 
 export default function LandingPage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.replace("/chat");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
   return (
     <div className="min-h-screen bg-[#0a0e1a] text-slate-200 flex flex-col items-center justify-center relative overflow-hidden">
       {/* Animated Orbs Background */}

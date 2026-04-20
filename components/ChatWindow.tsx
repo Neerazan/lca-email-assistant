@@ -68,7 +68,7 @@ export default function ChatWindow({
   return (
     <div className="flex flex-col h-full" style={{ background: "var(--chat-bg)" }}>
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {messages.length === 0 && !interrupt ? (
           <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in px-4">
             <div className="max-w-lg">

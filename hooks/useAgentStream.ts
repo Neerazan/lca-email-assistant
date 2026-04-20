@@ -60,6 +60,7 @@ export function useAgentStream(threadId: string, appToken: string | null) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const assistantBufferRef = useRef("");
+  const skipFetchRef = useRef<string | null>(null);
 
   const consumeStream = useCallback(async (response: Response) => {
     if (!response.ok) {
@@ -137,6 +138,11 @@ export function useAgentStream(threadId: string, appToken: string | null) {
     if (!threadId || !appToken) return;
     if (threadId.startsWith("thread-")) return;
 
+    if (skipFetchRef.current === threadId) {
+      skipFetchRef.current = null;
+      return;
+    }
+
     const fetchMessages = async () => {
       try {
         const response = await clientFetchAPI(`/chat/sessions/${threadId}/messages`, appToken);
@@ -161,10 +167,15 @@ export function useAgentStream(threadId: string, appToken: string | null) {
   }, [threadId, appToken]);
 
   const sendMessage = useCallback(
-    async (message: string) => {
-      if (!threadId) {
+    async (message: string, overrideThreadId?: string) => {
+      const targetThreadId = overrideThreadId || threadId;
+      if (!targetThreadId) {
         console.error("Cannot send message: No active session (threadId is empty)");
         return;
+      }
+
+      if (overrideThreadId && overrideThreadId !== threadId) {
+        skipFetchRef.current = overrideThreadId;
       }
 
       // Add user message immediately
@@ -181,7 +192,7 @@ export function useAgentStream(threadId: string, appToken: string | null) {
 
       const res = await clientFetchAPI("/chat/stream", appToken, {
         method: "POST",
-        body: JSON.stringify({ message, thread_id: threadId }),
+        body: JSON.stringify({ message, thread_id: targetThreadId }),
       });
 
       await consumeStream(res);
