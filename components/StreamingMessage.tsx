@@ -76,6 +76,7 @@ export default function StreamingMessage({
                   <h3 className="text-sm font-semibold text-white mt-2.5 mb-1" {...props}>{children}</h3>
                 ),
                 hr: () => <hr className="my-3 border-white/10" />,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 code: (props: any) => {
                   const { inline, children, ...rest } = props;
                   return inline ? (

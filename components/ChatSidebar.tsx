@@ -16,6 +16,10 @@ interface ChatSidebarProps {
   onNewChat: () => void;
   onDeleteSession: (id: string) => void;
   isOpen: boolean;
+  width: number;
+  onResizeStart: () => void;
+  isResizing: boolean;
+  onClose?: () => void;
 }
 
 export default function ChatSidebar({
@@ -26,6 +30,10 @@ export default function ChatSidebar({
   onNewChat,
   onDeleteSession,
   isOpen,
+  width,
+  onResizeStart,
+  isResizing,
+  onClose,
 }: ChatSidebarProps) {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -48,10 +56,13 @@ export default function ChatSidebar({
         fixed sm:relative top-0 left-0 z-30 h-full
         flex flex-col overflow-hidden
         border-r border-white/6
-        transition-all duration-300 ease-in-out
-        ${isOpen ? "translate-x-0 w-64 sm:w-64" : "-translate-x-full w-64 sm:translate-x-0 sm:w-0 sm:border-r-0"}
+        ${!isResizing ? "transition-all duration-300 ease-in-out" : ""}
+        ${isOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0 sm:w-0 sm:border-r-0"}
       `}
-      style={{ background: "var(--chat-bg)" }}
+      style={{
+        background: "var(--chat-bg)",
+        width: isOpen ? (typeof window !== "undefined" && window.innerWidth < 640 ? "60%" : `${width}px`) : "0px",
+      }}
     >
       {/* Sidebar Header */}
       <div className="px-3 pt-3 pb-2 border-b border-white/6">
@@ -59,9 +70,24 @@ export default function ChatSidebar({
           <span className="text-[11px] uppercase tracking-wide text-slate-500 font-medium">
             Conversations
           </span>
-          <span className="text-[10px] text-slate-600 rounded-full border border-white/10 px-2 py-0.5">
-            {sessions.length}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-slate-600 rounded-full border border-white/10 px-2 py-0.5">
+              {sessions.length}
+            </span>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="sm:hidden p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-slate-200 transition-all"
+                title="Close sidebar"
+                aria-label="Close sidebar"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6l-12 12" />
+                  <path d="M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         <button
@@ -146,6 +172,24 @@ export default function ChatSidebar({
             ))}
           </div>
         )}
+      </div>
+      {/* Resize Handle */}
+      <div
+        onMouseDown={(e) => {
+          e.preventDefault();
+          onResizeStart();
+        }}
+        className={`
+          hidden sm:block absolute top-0 right-0 w-1 h-full cursor-col-resize z-40
+          hover:bg-indigo-500/50 transition-colors group
+          ${isResizing ? "bg-indigo-500/50" : ""}
+        `}
+      >
+        <div className={`
+          absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+          w-0.5 h-8 rounded-full bg-white/10 group-hover:bg-white/30 transition-colors
+          ${isResizing ? "bg-white/40" : ""}
+        `} />
       </div>
     </aside>
   );

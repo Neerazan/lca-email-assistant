@@ -219,7 +219,7 @@ export default function ChatWindow({
                     key={attachment.id}
                     className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs text-slate-200"
                   >
-                    <span className="max-w-[180px] truncate">{attachment.filename}</span>
+                    <span className="max-w-45 truncate">{attachment.filename}</span>
                     <button
                       type="button"
                       className="cursor-pointer text-slate-400 hover:text-white"

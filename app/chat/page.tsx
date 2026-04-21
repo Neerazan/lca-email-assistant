@@ -3,13 +3,12 @@
 import ChatHeader from "@/components/ChatHeader";
 import ChatSidebar, { ChatSession } from "@/components/ChatSidebar";
 import ChatWindow from "@/components/ChatWindow";
+import ChatWindowSkeleton from "@/components/ChatWindowSkeleton";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAgentStream } from "@/hooks/useAgentStream";
 import { clientFetchAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import ChatSidebarSkeleton from "@/components/ChatSidebarSkeleton";
-import ChatWindowSkeleton from "@/components/ChatWindowSkeleton";
-import ConfirmationModal from "@/components/ConfirmationModal";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function ChatPage() {
@@ -23,6 +22,10 @@ export default function ChatPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+
+  // Sidebar resizing state
+  const [sidebarWidth, setSidebarWidth] = useState(260);
+  const [isResizing, setIsResizing] = useState(false);
 
   // Initialize from URL search param if available
   const [activeSessionId, setActiveSessionId] = useState<string | null>(() => {
@@ -107,6 +110,48 @@ export default function ChatPage() {
   useEffect(() => {
     loadSessions();
   }, [loadSessions, activeSessionId]);
+
+  // Resizing logic
+  const startResizing = useCallback(() => {
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback(
+    (e: MouseEvent) => {
+      if (isResizing) {
+        const newWidth = e.clientX;
+        if (newWidth >= 160 && newWidth <= 480) {
+          setSidebarWidth(newWidth);
+        }
+      }
+    },
+    [isResizing]
+  );
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", resize);
+      window.addEventListener("mouseup", stopResizing);
+      // Prevent text selection while resizing
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    } else {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+      document.body.style.cursor = "default";
+      document.body.style.userSelect = "auto";
+    }
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+      document.body.style.cursor = "default";
+      document.body.style.userSelect = "auto";
+    };
+  }, [isResizing, resize, stopResizing]);
 
   const handleSelectSession = useCallback(
     (id: string) => {
@@ -221,6 +266,10 @@ export default function ChatPage() {
         onNewChat={handleNewChat}
         onDeleteSession={handleDeleteSession}
         isOpen={sidebarOpen}
+        width={sidebarWidth}
+        onResizeStart={startResizing}
+        isResizing={isResizing}
+        onClose={() => setSidebarOpen(false)}
       />
       {sidebarOpen && (
         <button

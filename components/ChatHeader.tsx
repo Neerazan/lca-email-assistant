@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,7 +11,6 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({
   onToggleSidebar,
-  sidebarOpen: _sidebarOpen,
 }: ChatHeaderProps) {
   const { user, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -41,7 +41,7 @@ export default function ChatHeader({
           className="cursor-pointer flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white"
           aria-label="Toggle sidebar"
         >
-          <span className="-translate-x-[1px]">
+          <span className="-translate-x-px">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect width="18" height="18" x="3" y="3" rx="2" />
               <path d="M9 3v18" />
@@ -59,15 +59,17 @@ export default function ChatHeader({
           <button
             type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="cursor-pointer flex items-center gap-2 group pl-2 sm:pl-5 pr-2 sm:pr-4 py-1.5 rounded-full hover:bg-white/5 transition-colors border border-white/10 max-w-[180px] sm:max-w-none"
+            className="cursor-pointer flex items-center gap-2 group pl-2 sm:pl-5 pr-2 sm:pr-4 py-1.5 rounded-full hover:bg-white/5 transition-colors border border-white/10 max-w-45 sm:max-w-none"
           >
             <span className="hidden sm:block text-sm text-slate-300 font-medium truncate">
               {user.name || user.email?.split('@')[0] || 'User'}
             </span>
             {user.picture ? (
-              <img
+              <Image
                 src={user.picture}
                 alt="Avatar"
+                width={24}
+                height={24}
                 className="w-6 h-6 rounded-full border border-white/20 object-cover"
                 referrerPolicy="no-referrer"
               />

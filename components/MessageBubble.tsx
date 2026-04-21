@@ -118,13 +118,14 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                 <h3 className="text-sm font-semibold text-white mt-2.5 mb-1" {...props}>{children}</h3>
               ),
               hr: () => <hr className="my-3 border-white/10" />,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               code: (props: any) => {
                 const { inline, children, ...rest } = props;
                 return inline ? (
                   <code className="rounded bg-white/10 px-1 py-0.5 text-slate-100 text-[12px]" {...rest}>{children}</code>
                 ) : (
                   <pre className="my-3 overflow-x-auto rounded-xl border border-white/10 bg-[#0f172a] p-3 text-sm">
-                    <code className="whitespace-pre-wrap break-words" {...rest}>{children}</code>
+                    <code className="whitespace-pre-wrap wrap-break-words" {...rest}>{children}</code>
                   </pre>
                 );
               },
