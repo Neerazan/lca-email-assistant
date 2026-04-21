@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext"
 import { getPreferences, resetMemory, savePreferences } from "@/lib/api"
 import Link from "next/link"
+import ConfirmationModal from "@/components/ConfirmationModal"
 import { useCallback, useEffect, useState } from "react"
 
 const fieldClass =
@@ -422,37 +423,18 @@ export default function SettingsPage() {
         </div>
       </main>
 
-      {showResetConfirm && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#121521] shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
-            <div className="px-5 pt-5 pb-3 border-b border-white/10">
-              <h3 className="text-base font-semibold text-white">Reset AI memory?</h3>
-              <p className="text-sm text-slate-400 mt-1 leading-relaxed">
-                This will permanently remove all memory facts learned by the assistant.
-              </p>
-            </div>
-            <div className="px-5 py-4 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setShowResetConfirm(false)}
-                className="cursor-pointer px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-slate-300 text-sm font-medium hover:bg-white/10 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  setShowResetConfirm(false)
-                  await handleResetMemory()
-                }}
-                className="cursor-pointer px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold transition-colors"
-              >
-                Yes, reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={showResetConfirm}
+        title="Reset memory?"
+        description="This will permanently remove all memory facts learned by the assistant. This action cannot be undone."
+        confirmText="Reset Memory"
+        onConfirm={async () => {
+          setShowResetConfirm(false)
+          await handleResetMemory()
+        }}
+        onCancel={() => setShowResetConfirm(false)}
+        variant="danger"
+      />
     </div>
   )
 }

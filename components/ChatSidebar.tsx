@@ -122,7 +122,7 @@ export default function ChatSidebar({
                       e.stopPropagation();
                       onDeleteSession(session.id);
                     }}
-                    className="absolute right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-red-500/20 hover:text-red-400 text-slate-500 transition-all cursor-pointer"
+                    className="absolute right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-rose-500/20 hover:text-rose-400 text-slate-500 transition-all cursor-pointer"
                     title="Delete chat"
                     aria-label="Delete chat"
                   >

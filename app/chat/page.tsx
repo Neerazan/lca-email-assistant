@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAgentStream } from "@/hooks/useAgentStream";
 import { clientFetchAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function ChatPage() {
@@ -245,31 +246,15 @@ export default function ChatPage() {
       </div>
 
 
-      {/* Delete Confirmation Modal */}
-      {sessionToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1e2330] p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 border border-white/10">
-            <h3 className="text-xl font-medium text-white mb-4">Delete chat?</h3>
-            <p className="text-[15px] text-slate-300 mb-8 leading-relaxed">
-              This will delete prompts, responses, and any content you created in this session.
-            </p>
-            <div className="flex items-center justify-end gap-3 font-medium">
-              <button
-                onClick={() => setSessionToDelete(null)}
-                className="px-5 py-2.5 rounded-full text-sm text-slate-200 hover:bg-white/10 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-5 py-2.5 rounded-full text-sm bg-[#2b3142] text-red-400 hover:bg-[#343b4f] transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={!!sessionToDelete}
+        title="Delete chat?"
+        description="This will permanently remove this conversation and all its messages. This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setSessionToDelete(null)}
+        variant="danger"
+      />
     </div>
   );
 }
