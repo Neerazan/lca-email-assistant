@@ -28,11 +28,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body 
         className="min-h-full flex flex-col font-sans bg-[#0a0e1a] text-slate-200"
-        suppressHydrationWarning
+        data-scroll-behavior="smooth"
+      suppressHydrationWarning
       >
         <AuthProvider>
           {children}
