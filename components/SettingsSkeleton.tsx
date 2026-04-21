@@ -14,7 +14,7 @@ export default function SettingsSkeleton() {
       {/* Main Content Skeleton */}
       <main className="max-w-5xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-6 sm:space-y-8 pb-24">
         {[...Array(3)].map((_, i) => (
-          <section key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+          <section key={i} className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
               {/* Section Header */}
               <div className="space-y-2">

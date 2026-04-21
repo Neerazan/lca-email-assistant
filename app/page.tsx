@@ -23,7 +23,7 @@ export default function LandingPage() {
       <div className="orb orb-2 bottom-[5%] right-[-10%] opacity-10" />
 
       <main className="relative z-10 w-full max-w-4xl text-center animate-fade-in">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl px-6 sm:px-10 py-10 sm:py-12 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-white/2 backdrop-blur-xl px-6 sm:px-10 py-10 sm:py-12 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
           <div className="flex flex-col items-center space-y-8">
 
             <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-1">
@@ -59,7 +59,7 @@ export default function LandingPage() {
                 "Draft polished replies with context",
                 "Human-in-the-loop approval before send",
               ].map((item) => (
-                <div key={item} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs sm:text-[13px] text-slate-300">
+                <div key={item} className="rounded-xl border border-white/10 bg-white/3 px-3 py-2 text-xs sm:text-[13px] text-slate-300">
                   {item}
                 </div>
               ))}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -93,8 +94,8 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               p: ({ children, ...props }) => (
                 <div className="mb-2.5 last:mb-0" {...props}>{children}</div>
               ),
-              a: ({ children, ...props }) => (
-                <a className="text-indigo-300 hover:text-indigo-100 underline break-all" {...props}>{children}</a>
+              a: ({ children, href, ...props }) => (
+                <Link href={href || "#"} className="text-indigo-300 hover:text-indigo-100 underline break-all" {...props}>{children}</Link>
               ),
               strong: ({ children, ...props }) => (
                 <strong className="font-semibold text-white" {...props}>{children}</strong>

@@ -32,7 +32,7 @@ export default function ChatWindowSkeleton() {
         <div className="max-w-3xl mx-auto">
           {/* Main Input Box Skeleton - calculated 99px for exact match */}
           <div 
-            className="rounded-2xl border border-white/10 bg-white/4 h-[99px]" 
+            className="rounded-2xl border border-white/10 bg-white/4 h-24.75" 
             style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.2)" }}
           />
           

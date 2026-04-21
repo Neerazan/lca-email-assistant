@@ -47,7 +47,7 @@ export default function EmailDraftCard({
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/4 overflow-hidden shadow-[0_6px_30px_rgba(0,0,0,0.25)]">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/[0.03]">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-white/3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="15"

@@ -75,9 +75,9 @@ export default function ConfirmationModal({
   const styles = getVariantStyles();
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+    <div className="fixed inset-0 z-120 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
       <div 
-        className="w-full max-w-[380px] rounded-2xl border border-white/10 bg-[#0d0d15] shadow-2xl p-7 animate-slide-up"
+        className="w-full max-w-95 rounded-2xl border border-white/10 bg-[#0d0d15] shadow-2xl p-7 animate-slide-up"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

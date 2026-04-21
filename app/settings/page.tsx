@@ -215,9 +215,9 @@ export default function SettingsPage() {
       </header>
 
       {message.text && (
-        <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-4 sm:right-6 z-[100] pointer-events-none">
+        <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-4 sm:right-6 z-100 pointer-events-none">
           <div
-            className={`pointer-events-auto flex items-start gap-3 min-w-[280px] max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-2xl border px-4 py-3 backdrop-blur-xl shadow-[0_18px_40px_rgba(0,0,0,0.45)] animate-fade-in ${
+            className={`pointer-events-auto flex items-start gap-3 min-w-70 max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-2xl border px-4 py-3 backdrop-blur-xl shadow-[0_18px_40px_rgba(0,0,0,0.45)] animate-fade-in ${
               message.type === "success"
                 ? "bg-indigo-500/20 border-indigo-400/40 text-indigo-100"
                 : "bg-rose-500/20 border-rose-400/40 text-rose-100"
@@ -246,7 +246,7 @@ export default function SettingsPage() {
               <p className="text-xs uppercase tracking-wide opacity-80 mb-0.5">
                 {message.type === "success" ? "Success" : "Error"}
               </p>
-              <p className="text-sm font-medium leading-relaxed break-words">
+              <p className="text-sm font-medium leading-relaxed wrap-break-words">
                 {message.text}
               </p>
             </div>
@@ -266,7 +266,7 @@ export default function SettingsPage() {
       )}
 
       <main className="max-w-5xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-6 sm:space-y-8 animate-fade-in pb-24">
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div>
             <h2 className="text-base font-semibold text-white">AI Personality</h2>
@@ -316,7 +316,7 @@ export default function SettingsPage() {
         </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div>
             <h2 className="text-base font-semibold text-white">Identity & Context</h2>
@@ -357,7 +357,7 @@ export default function SettingsPage() {
         </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div>
             <h2 className="text-base font-semibold text-white">Memory & Behavior</h2>

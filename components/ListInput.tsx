@@ -59,7 +59,7 @@ export default function ListInput({
           </div>
         ))}
         {items.length === 0 && (
-          <div className="px-3 py-4 rounded-xl border border-dashed border-white/10 bg-white/[0.01] text-center">
+          <div className="px-3 py-4 rounded-xl border border-dashed border-white/10 bg-white/1 text-center">
             <p className="text-xs text-slate-500 italic">No items added yet.</p>
           </div>
         )}
@@ -85,13 +85,13 @@ export default function ListInput({
             }
           }}
           placeholder={placeholder}
-          className={`${className} resize-none min-h-[42px] py-2.5 overflow-hidden transition-[height] duration-200`}
+          className={`${className} resize-none min-h-10.5 py-2.5 overflow-hidden transition-[height] duration-200`}
         />
         <button
           type="button"
           onClick={addItem}
           disabled={!inputValue.trim()}
-          className="cursor-pointer px-5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/5 disabled:text-slate-600 text-white rounded-xl text-sm font-semibold transition-all active:scale-[0.98] h-[42px] shrink-0 self-end"
+          className="cursor-pointer px-5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/5 disabled:text-slate-600 text-white rounded-xl text-sm font-semibold transition-all active:scale-[0.98] h-10.5 shrink-0 self-end"
         >
           Add
         </button>
