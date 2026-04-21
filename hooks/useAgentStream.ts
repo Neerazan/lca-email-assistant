@@ -68,6 +68,7 @@ export function useAgentStream(threadId: string, appToken: string | null) {
   const [interrupt, setInterrupt] = useState<InterruptValue | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const assistantBufferRef = useRef("");
   const skipFetchRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -162,6 +163,7 @@ export function useAgentStream(threadId: string, appToken: string | null) {
 
     const fetchMessages = async () => {
       try {
+        setMessagesLoading(true);
         const response = await clientFetchAPI(`/chat/sessions/${threadId}/messages`, appToken);
         const data = (await response.json()) as SessionMessage[];
 
@@ -177,6 +179,8 @@ export function useAgentStream(threadId: string, appToken: string | null) {
         );
       } catch (error) {
         console.error("Failed to load messages:", error);
+      } finally {
+        setMessagesLoading(false);
       }
     };
 
@@ -309,5 +313,5 @@ export function useAgentStream(threadId: string, appToken: string | null) {
     };
   }, []);
 
-  return { messages, interrupt, isStreaming, activeTool, sendMessage, resume, stop, clearMessages };
+  return { messages, interrupt, isStreaming, activeTool, messagesLoading, sendMessage, resume, stop, clearMessages };
 }

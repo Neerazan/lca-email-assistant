@@ -1,5 +1,7 @@
 "use client";
 
+import ChatSidebarSkeleton from "./ChatSidebarSkeleton";
+
 export interface ChatSession {
   id: string;
   title: string;
@@ -8,6 +10,7 @@ export interface ChatSession {
 
 interface ChatSidebarProps {
   sessions: ChatSession[];
+  isLoading: boolean;
   activeSessionId: string | null;
   onSelectSession: (id: string) => void;
   onNewChat: () => void;
@@ -17,6 +20,7 @@ interface ChatSidebarProps {
 
 export default function ChatSidebar({
   sessions,
+  isLoading,
   activeSessionId,
   onSelectSession,
   onNewChat,
@@ -80,7 +84,9 @@ export default function ChatSidebar({
 
       {/* Sessions List */}
       <div className="flex-1 overflow-y-auto px-2 py-2">
-        {sessions.length === 0 ? (
+        {isLoading && sessions.length === 0 ? (
+          <ChatSidebarSkeleton />
+        ) : sessions.length === 0 ? (
           <div className="mx-1 mt-3 rounded-xl border border-white/8 bg-white/3 p-4 text-center">
             <p className="text-sm text-slate-400 mb-1">No conversations yet</p>
             <p className="text-[11px] text-slate-600">Start a new chat to begin.</p>

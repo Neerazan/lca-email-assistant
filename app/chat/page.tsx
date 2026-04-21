@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAgentStream } from "@/hooks/useAgentStream";
 import { clientFetchAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import ChatSidebarSkeleton from "@/components/ChatSidebarSkeleton";
+import ChatWindowSkeleton from "@/components/ChatWindowSkeleton";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -19,6 +21,7 @@ export default function ChatPage() {
     return window.innerWidth >= 640;
   });
   const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   // Initialize from URL search param if available
@@ -48,6 +51,7 @@ export default function ChatPage() {
     interrupt,
     isStreaming,
     activeTool,
+    messagesLoading,
     sendMessage,
     resume,
     stop,
@@ -84,6 +88,7 @@ export default function ChatPage() {
   const loadSessions = useCallback(async () => {
     if (!isAuthenticated || !appToken) return;
     try {
+      setSessionsLoading(true);
       const response = await clientFetchAPI("/chat/sessions", appToken);
       const data = await response.json();
       if (Array.isArray(data)) {
@@ -93,6 +98,8 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.warn("Sessions fetch failed", error);
+    } finally {
+      setSessionsLoading(false);
     }
   }, [isAuthenticated, appToken]);
 
@@ -208,6 +215,7 @@ export default function ChatPage() {
     <div className="flex h-screen bg-[#0a0e1a] overflow-hidden text-slate-200">
       <ChatSidebar
         sessions={sessions}
+        isLoading={sessionsLoading}
         activeSessionId={activeSessionId}
         onSelectSession={handleSelectSession}
         onNewChat={handleNewChat}
@@ -230,18 +238,22 @@ export default function ChatPage() {
         />
 
         <main className="flex-1 overflow-hidden">
-          <ChatWindow
-            messages={messages}
-            streamingContent={streamingContent}
-            streamingTool={activeTool}
-            isStreaming={isStreaming}
-            interrupt={interrupt}
-            onSendMessage={handleSendMessage}
-            onResume={resume}
-            onStop={stop}
-            threadId={threadId}
-            appToken={appToken}
-          />
+          {messagesLoading && messages.length === 0 ? (
+            <ChatWindowSkeleton />
+          ) : (
+            <ChatWindow
+              messages={messages}
+              streamingContent={streamingContent}
+              streamingTool={activeTool}
+              isStreaming={isStreaming}
+              interrupt={interrupt}
+              onSendMessage={handleSendMessage}
+              onResume={resume}
+              onStop={stop}
+              threadId={threadId}
+              appToken={appToken}
+            />
+          )}
         </main>
       </div>
 

@@ -5,6 +5,7 @@ import { getPreferences, resetMemory, savePreferences } from "@/lib/api"
 import Link from "next/link"
 import ConfirmationModal from "@/components/ConfirmationModal"
 import ListInput from "@/components/ListInput"
+import SettingsSkeleton from "@/components/SettingsSkeleton"
 import { useCallback, useEffect, useState } from "react"
 
 const fieldClass =
@@ -184,12 +185,8 @@ export default function SettingsPage() {
     }
   }
 
-  if (authLoading || (isAuthenticated && loading)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-white font-sans" style={{ background: "var(--chat-bg)" }}>
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+  if (authLoading || loading) {
+    return <SettingsSkeleton />
   }
 
   if (!isAuthenticated) {
