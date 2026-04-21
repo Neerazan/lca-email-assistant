@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { getPreferences, resetMemory, savePreferences } from "@/lib/api"
 import Link from "next/link"
 import ConfirmationModal from "@/components/ConfirmationModal"
+import ListInput from "@/components/ListInput"
 import { useCallback, useEffect, useState } from "react"
 
 const fieldClass =
@@ -349,11 +350,10 @@ export default function SettingsPage() {
 
             <div className="space-y-1.5">
               <label className={labelClass}>Important Relationships</label>
-              <textarea
+              <ListInput
                 value={prefs.relationships}
-                onChange={(e) => setPrefs({ ...prefs, relationships: e.target.value })}
-                placeholder="e.g. Sarah is my manager, Team at Vertex are my main clients."
-                className={`${fieldClass} min-h-24 resize-y`}
+                onChange={(val) => setPrefs({ ...prefs, relationships: val })}
+                placeholder="e.g. Sarah is my manager"
               />
             </div>
           </div>
@@ -386,11 +386,10 @@ export default function SettingsPage() {
 
             <div className="space-y-1.5">
               <label className={labelClass}>Custom Instructions</label>
-              <textarea
+              <ListInput
                 value={prefs.custom_instructions}
-                onChange={(e) => setPrefs({ ...prefs, custom_instructions: e.target.value })}
-                placeholder="e.g. Always use British English, Never use exclamation marks."
-                className={`${fieldClass} min-h-28 resize-y`}
+                onChange={(val) => setPrefs({ ...prefs, custom_instructions: val })}
+                placeholder="e.g. Always use British English"
               />
             </div>
 
