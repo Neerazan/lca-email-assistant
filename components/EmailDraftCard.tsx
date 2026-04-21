@@ -86,6 +86,38 @@ export default function EmailDraftCard({
                         {String(args.subject ?? "")}
                       </span>
                     </div>
+                    {(() => {
+                      if (args.cc && Array.isArray(args.cc)) {
+                        const cc = args.cc as string[];
+                        if (cc.length > 0) {
+                          return (
+                            <div className="flex gap-3">
+                              <span className="text-slate-500 w-14 shrink-0">Cc</span>
+                              <span className="text-slate-200">
+                                {cc.join(", ")}
+                              </span>
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
+                    {(() => {
+                      if (args.bcc && Array.isArray(args.bcc)) {
+                        const bcc = args.bcc as string[];
+                        if (bcc.length > 0) {
+                          return (
+                            <div className="flex gap-3">
+                              <span className="text-slate-500 w-14 shrink-0">Bcc</span>
+                              <span className="text-slate-200">
+                                {bcc.join(", ")}
+                              </span>
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
                     <div className="mt-3 pt-3 border-t border-white/10">
                       <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">
                         {String(args.message ?? "")}
@@ -233,6 +265,7 @@ export default function EmailDraftCard({
                             edited_action: {
                               name: "send_email",
                               args: {
+                                ...args,
                                 to: editTo,
                                 subject: editSubject,
                                 message: editBody,
