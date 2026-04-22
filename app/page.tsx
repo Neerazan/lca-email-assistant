@@ -62,10 +62,10 @@ export default function LandingPage() {
 
             <div className="pt-4 w-full max-w-sm">
               <LoginButton />
-
+{/* 
               <p className="mt-4 text-xs text-slate-500">
                 For demonstration only. Requires Gmail read/send permissions.
-              </p>
+              </p> */}
             </div>
           </div>
         </div>
