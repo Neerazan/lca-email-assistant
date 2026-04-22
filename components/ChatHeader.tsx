@@ -48,9 +48,18 @@ export default function ChatHeader({
             </svg>
           </span>
         </button>
-        <span className="text-sm font-medium text-slate-300">
-          AI Email Assistant
-        </span>
+        <div className="flex items-center gap-2">
+          <Image
+            src="/icon.png"
+            alt="Logo"
+            width={20}
+            height={20}
+            className="w-5 h-5 object-contain"
+          />
+          <span className="text-sm font-medium text-slate-300">
+            AI Email Assistant
+          </span>
+        </div>
       </div>
 
       {/* Right: User Dropdown */}

@@ -2,6 +2,7 @@
 
 import type { InterruptValue, Message } from "@/hooks/useAgentStream";
 import { uploadAttachment, type UploadedAttachment } from "@/lib/api";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import EmailDraftCard from "./EmailDraftCard";
 import MessageBubble from "./MessageBubble";
@@ -128,11 +129,14 @@ export default function ChatWindow({
         {messages.length === 0 && !interrupt ? (
           <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in px-4">
             <div className="max-w-lg">
-              <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center mx-auto mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
+              <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6 border border-white/10 overflow-hidden shadow-lg shadow-indigo-500/5">
+                <Image
+                  src="/icon.png"
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 object-contain"
+                />
               </div>
               <h2 className="text-xl font-semibold text-white mb-2">How can I help you today?</h2>
               <p className="text-sm text-slate-400 mb-8 leading-relaxed">
