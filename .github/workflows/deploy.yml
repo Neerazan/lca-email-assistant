@@ -43,7 +43,7 @@ jobs:
       - name: Prepare Deployment Files
         run: |
           mkdir -p deploy
-          cp -r .next/standalone/* deploy/
+          cp -r .next/standalone/. deploy/
           cp -r .next/static deploy/.next/
           cp -r public deploy/
           cp ecosystem.config.js deploy/
@@ -55,7 +55,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy/*"
+          source: "deploy/**,deploy/.*"
           target: ${{ secrets.REMOTE_APP_PATH }}
           strip_components: 1
 
