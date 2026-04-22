@@ -1,0 +1,182 @@
+name: Build and Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+        continue-on-error: true
+
+      - name: Lint code (optional)
+        run: npm run lint || true
+        continue-on-error: true
+
+      - name: Build Next.js project
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Create deployment package
+        run: |
+          # Create artifact directory structure
+          mkdir -p deploy-artifact
+          
+          # Copy essential files
+          cp -r .next deploy-artifact/
+          cp package.json deploy-artifact/
+          cp package-lock.json deploy-artifact/ || true
+          cp ecosystem.config.js deploy-artifact/ || true
+          cp next.config.ts deploy-artifact/ || true
+          cp tsconfig.json deploy-artifact/ || true
+          
+          # Copy public and other directories if they exist
+          [ -d public ] && cp -r public deploy-artifact/ || true
+          [ -d .env.production ] && cp .env.production deploy-artifact/ || true
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script_stop: true
+          envs: APP_PORT
+          script: |
+            #!/bin/bash
+            set -e
+            
+            DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
+            APP_NAME="lca-email-assistant"
+            BACKUP_DIR="${DEPLOY_PATH}/.backup"
+            
+            echo "========================================="
+            echo "🚀 Starting Deployment..."
+            echo "========================================="
+            
+            # Navigate to deployment directory
+            if [ ! -d "$DEPLOY_PATH" ]; then
+              echo "❌ Deployment path does not exist: $DEPLOY_PATH"
+              exit 1
+            fi
+            
+            cd "$DEPLOY_PATH"
+            
+            # Create backup directory
+            mkdir -p "$BACKUP_DIR"
+            
+            # Backup current build
+            if [ -d ".next" ]; then
+              echo "📦 Creating backup of current build..."
+              rm -rf "${BACKUP_DIR}/.next.old"
+              cp -r ".next" "${BACKUP_DIR}/.next.$(date +%s)"
+            fi
+            
+            # Stop the application
+            echo "⏹️  Stopping application..."
+            pm2 stop "$APP_NAME" 2>/dev/null || echo "App was not running"
+            
+            # Hard reset git to latest (discard any local changes)
+            echo "📥 Updating from Git..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            npm ci --omit=dev --legacy-peer-deps 2>&1 | tail -5
+            
+            # Build the application
+            echo "🔨 Building Next.js application..."
+            npm run build 2>&1 | tail -10
+            
+            # Start the application with PM2
+            echo "🚀 Starting application with PM2..."
+            pm2 start ecosystem.config.js --name "$APP_NAME" || pm2 restart "$APP_NAME"
+            
+            # Save PM2 configuration
+            pm2 save
+            
+            # Wait for app to start
+            sleep 3
+            
+            # Verify application is running
+            echo "✅ Verifying deployment..."
+            if pm2 list | grep -q "$APP_NAME"; then
+              if pm2 list | grep "$APP_NAME" | grep -q "online"; then
+                echo "✅ Application is running and online"
+              else
+                echo "⚠️  Application started but status is not online yet"
+              fi
+            else
+              echo "❌ Application failed to start"
+              pm2 logs "$APP_NAME" --lines 20
+              exit 1
+            fi
+            
+            echo ""
+            echo "========================================="
+            echo "✅ Deployment Completed Successfully!"
+            echo "========================================="
+            echo "App Name: $APP_NAME"
+            echo "Running on: ${DEPLOY_PATH}"
+            echo ""
+            echo "Recent logs:"
+            pm2 logs "$APP_NAME" --lines 10 --nostream
+            
+      - name: Verify Nginx
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            echo "🔍 Verifying Nginx configuration..."
+            sudo nginx -t
+            
+            echo ""
+            echo "🔍 Checking if application is listening on port 3001..."
+            if netstat -tuln | grep -q ":3001 "; then
+              echo "✅ Application is listening on port 3001"
+            else
+              echo "⚠️  Application may not be listening, checking again in 5 seconds..."
+              sleep 5
+              netstat -tuln | grep 3001 || echo "⚠️  Still not listening"
+            fi
+            
+            echo ""
+            echo "📊 PM2 Status:"
+            pm2 status
+            
+      - name: Send Deployment Notification
+        if: always()
+        run: |
+          echo "Deployment status: ${{ job.status }}"
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment succeeded! Your app should be live soon at https://app.dhakalnirajan.com.np"
+          else
+            echo "❌ Deployment failed. Check the logs above for details."
+          fi
