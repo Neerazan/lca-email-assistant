@@ -2,9 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'email_assistant',
-      script: 'node',
-      args: 'server.js',
-      cwd: './',
+      script: 'server.js',
       env: {
         NODE_ENV: 'production',
         PORT: 3008,
