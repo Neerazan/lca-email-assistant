@@ -153,3 +153,10 @@ export async function resetMemory(appToken: string, googleId: string) {
   return res.json()
 }
 
+export async function deleteAccount(appToken: string, googleId: string) {
+  const res = await clientFetchAPI(`/preferences/${googleId}`, appToken, {
+    method: "DELETE",
+  })
+  return res.json()
+}
+

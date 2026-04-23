@@ -1,8 +1,9 @@
 "use client"
 
 import { useAuth } from "@/contexts/AuthContext"
-import { getPreferences, resetMemory, savePreferences } from "@/lib/api"
+import { deleteAccount, getPreferences, resetMemory, savePreferences } from "@/lib/api"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import ConfirmationModal from "@/components/ConfirmationModal"
 import ListInput from "@/components/ListInput"
 import SettingsSkeleton from "@/components/SettingsSkeleton"
@@ -109,11 +110,13 @@ function Toggle({
 }
 
 export default function SettingsPage() {
-  const { appToken, user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { appToken, user, isAuthenticated, isLoading: authLoading, signOut } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [message, setMessage] = useState({ type: "", text: "" })
+  const router = useRouter()
 
   const [prefs, setPrefs] = useState({
     tone: "formal",
@@ -180,6 +183,26 @@ export default function SettingsPage() {
     } catch (error) {
       console.error("Failed to reset AI memory", error)
       setMessage({ type: "error", text: "Failed to reset AI memory." })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!appToken || !user?.sub) return
+
+    try {
+      setSaving(true)
+      await deleteAccount(appToken, user.sub)
+      
+      // Clear local auth state
+      await signOut()
+      
+      // Redirect to home
+      router.replace("/")
+    } catch (error) {
+      console.error("Failed to delete account", error)
+      setMessage({ type: "error", text: "Failed to delete account." })
     } finally {
       setSaving(false)
     }
@@ -402,6 +425,27 @@ export default function SettingsPage() {
           </div>
         </div>
         </section>
+ 
+         <section className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            <div>
+              <h2 className="text-base font-semibold text-red-400">Danger Zone</h2>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">Permanently delete your account and all associated data.</p>
+            </div>
+
+            <div className="md:col-span-2 space-y-6">
+              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <span className="text-xs text-slate-500 italic">All your preferences, chat history, and memory will be wiped.</span>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="cursor-pointer px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-600/20 rounded-xl transition-all text-xs font-semibold active:scale-[0.98]"
+                >
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <div className="sticky bottom-3 z-10 flex justify-end">
           <div className="rounded-2xl border border-white/10 bg-[#0d0d15]/80 backdrop-blur-sm px-3 py-2">
@@ -429,6 +473,19 @@ export default function SettingsPage() {
           await handleResetMemory()
         }}
         onCancel={() => setShowResetConfirm(false)}
+        variant="danger"
+      />
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        title="Delete account?"
+        description="This will permanently delete your account, preferences, and all chat history. This action cannot be undone."
+        confirmText="Delete Permanently"
+        onConfirm={async () => {
+          setShowDeleteConfirm(false)
+          await handleDeleteAccount()
+        }}
+        onCancel={() => setShowDeleteConfirm(false)}
         variant="danger"
       />
     </div>
