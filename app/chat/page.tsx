@@ -22,6 +22,7 @@ export default function ChatPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Sidebar resizing state
   const [sidebarWidth, setSidebarWidth] = useState(260);
@@ -219,6 +220,7 @@ export default function ChatPage() {
   const confirmDelete = useCallback(async () => {
     if (!sessionToDelete) return;
     const id = sessionToDelete;
+    setIsDeleting(true);
 
     try {
       const response = await clientFetchAPI(`/chat/sessions/${id}`, appToken, {
@@ -244,6 +246,7 @@ export default function ChatPage() {
     } catch (error) {
       console.error("Error deleting session:", error);
     } finally {
+      setIsDeleting(false);
       setSessionToDelete(null);
     }
   }, [appToken, activeSessionId, clearMessages, handleNewChat, sessionToDelete]);
@@ -315,6 +318,8 @@ export default function ChatPage() {
         onConfirm={confirmDelete}
         onCancel={() => setSessionToDelete(null)}
         variant="danger"
+        isLoading={isDeleting}
+        loadingText="Deleting..."
       />
     </div>
   );
