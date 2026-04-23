@@ -250,14 +250,14 @@ export default function ChatPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a]">
+      <div className="min-h-dvh flex items-center justify-center bg-[#0a0e1a]">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0e1a] overflow-hidden text-slate-200">
+    <div className="flex h-dvh bg-[#0a0e1a] overflow-hidden text-slate-200">
       <ChatSidebar
         sessions={sessions}
         isLoading={sessionsLoading}

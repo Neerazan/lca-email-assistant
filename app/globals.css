@@ -124,6 +124,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ===== Mobile Viewport Height Fix ===== */
+/* On mobile browsers, 100vh includes the space behind the address bar.
+   Use dvh (dynamic viewport height) which adjusts to the actual visible area.
+   Fallback to 100vh for browsers that don't support dvh. */
+@supports (height: 100dvh) {
+  .h-dvh {
+    height: 100dvh !important;
+  }
+}
+
 /* ===== Scrollbar ===== */
 ::-webkit-scrollbar {
   width: 6px;
