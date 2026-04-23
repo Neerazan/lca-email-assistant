@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-  const lastUpdated = "April 9, 2026";
+  const lastUpdated = "April 23, 2026";
 
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-slate-300 relative overflow-hidden">
@@ -46,127 +46,87 @@ export default function TermsPage() {
           <div className="space-y-8 text-sm leading-relaxed">
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                1. About This Project
+                1. Acceptance of Terms
               </h2>
               <p>
-                AI Email Assistant (&quot;the Service&quot;) is a{" "}
-                Gmail assistant powered by LangGraph to help with reading,
-                summarizing, and drafting email replies. By using this Service,
-                you agree to these Terms.
+                By accessing or using AI Email Assistant (&quot;the Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                2. Google Account Access
+                2. Description of Service
+              </h2>
+              <p>
+                AI Email Assistant is an AI-powered productivity tool that interacts with your Gmail inbox to help you read, search, summarize, and draft email replies. The Service uses large language models (LLMs) to process your natural language requests.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-white mb-3">
+                3. Google Account Integration
               </h2>
               <p className="mb-3">
-                The Service uses Google OAuth 2.0 to access your Google account.
-                When you sign in, you grant the Service the following permissions:
+                To use the Service, you must sign in with your Google account and grant specific permissions (scopes) via OAuth 2.0.
               </p>
               <ul className="list-disc list-inside space-y-1.5 text-slate-400 ml-2">
-                <li>
-                  <strong className="text-slate-300">Read your emails</strong>{" "}
-                  (Gmail readonly scope) — to summarize and search your inbox.
-                </li>
-                <li>
-                  <strong className="text-slate-300">Send emails</strong>{" "}
-                  (Gmail send scope) — to send emails on your behalf, only when
-                  you explicitly approve a draft.
-                </li>
-                <li>
-                  <strong className="text-slate-300">
-                    View your basic profile
-                  </strong>{" "}
-                  (openid, email, profile) — to display your name and email in the
-                  interface.
-                </li>
+                <li><strong className="text-slate-300">Gmail Access:</strong> You grant the Service permission to read and manage your emails.</li>
+                <li><strong className="text-slate-300">User Approval:</strong> The Service will NEVER send an email without your explicit approval of a drafted response.</li>
+                <li><strong className="text-slate-300">Revocation:</strong> You can revoke access at any time via your Google Account security settings.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                3. How Your Data Is Used
-              </h2>
-              <p className="mb-3">
-                The Service processes your email data solely to respond to your
-                chat requests. Specifically:
-              </p>
-              <ul className="list-disc list-inside space-y-1.5 text-slate-400 ml-2">
-                <li>
-                  Email content is read on-demand when you ask the AI to
-                  summarize, search, or draft a reply.
-                </li>
-                <li>Emails are never sent without your explicit approval.</li>
-                <li>
-                  Chat conversations may be stored temporarily for session
-                  continuity but are not used for any other purpose.
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-semibold text-white mb-3">
-                4. No Warranty
+                4. User Responsibilities
               </h2>
               <p>
-                This Service is provided <strong className="text-slate-200">&quot;as is&quot;</strong> and{" "}
-                <strong className="text-slate-200">&quot;as available.&quot;</strong> As a
-                demonstration project, there is no guarantee of uptime,
-                reliability, or accuracy. The AI may produce incorrect summaries
-                or drafts — always review before approving any email send.
+                You are responsible for all activity that occurs under your account. You agree not to use the Service for any unlawful or prohibited activities, including sending spam or malicious content. Because the Service uses AI, it may occasionally produce inaccurate information. You are responsible for reviewing all AI-generated drafts before sending them.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                5. Limitation of Liability
+                5. Privacy and Data Use
               </h2>
               <p>
-                The developer of this project shall not be liable for any damages
-                arising from your use of the Service, including but not limited to
-                emails sent in error, data loss, or unauthorized access to your
-                Google account. You use this Service at your own risk.
+                Your use of the Service is also governed by our <Link href="/privacy" className="text-indigo-400 hover:underline">Privacy Policy</Link>. We comply with the Google API Services User Data Policy, including the Limited Use requirements.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                6. Revoking Access
+                6. Disclaimer of Warranties
               </h2>
               <p>
-                You can revoke the Service&apos;s access to your Google account at any
-                time by visiting your{" "}
-                <Link
-                  href="https://myaccount.google.com/permissions"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2"
-                >
-                  Google Account permissions page
-                </Link>
-                . Revoking access will immediately prevent the Service from
-                reading or sending emails on your behalf.
+                The Service is provided &quot;as is&quot; and &quot;as available&quot; without any warranties of any kind. We do not guarantee that the Service will be uninterrupted, secure, or error-free.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                7. Changes to These Terms
+                7. Limitation of Liability
               </h2>
               <p>
-                These terms may be updated from time to time. Continued use of the
-                Service after any changes constitutes acceptance of the new terms.
+                In no event shall the Service or its developers be liable for any indirect, incidental, special, or consequential damages arising out of your use of the Service.
               </p>
             </section>
 
             <section>
               <h2 className="text-lg font-semibold text-white mb-3">
-                8. Contact
+                8. Changes to Terms
               </h2>
               <p>
-                If you have any questions about these Terms, please reach out via
-                the project&apos;s GitHub repository.
+                We reserve the right to modify these terms at any time. We will notify you of any changes by updating the &quot;Last updated&quot; date at the top of this page.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-white mb-3">
+                9. Contact
+              </h2>
+              <p>
+                If you have any questions about these Terms, please contact us via our GitHub repository or at <span className="text-white font-medium">[Your Support Email]</span>.
               </p>
             </section>
           </div>
