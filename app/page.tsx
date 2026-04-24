@@ -17,6 +17,20 @@ export default function LandingPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    const mailtoLink = "mailto:nirajandhakal634@gmail.com?subject=Access%20Request%20for%20AI%20Email%20Assistant&body=Hi%20Nirajan,%0A%0AI%20would%20like%20to%20test%20the%20AI%20Email%20Assistant%20app.%20Please%20grant%20me%20access.%0A%0AThanks!";
+    const webLink = "https://mail.google.com/mail/?view=cm&fs=1&to=nirajandhakal634@gmail.com&su=Access%20Request%20for%20AI%20Email%20Assistant&body=Hi%20Nirajan,%0A%0AI%20would%20like%20to%20test%20the%20AI%20Email%20Assistant%20app.%20Please%20grant%20me%20access.%0A%0AThanks!";
+
+    if (isMobile) {
+      window.location.href = mailtoLink;
+    } else {
+      window.open(webLink, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-slate-200 flex flex-col items-center justify-center relative overflow-hidden px-4">
       {/* Animated Orbs Background */}
@@ -30,9 +44,8 @@ export default function LandingPage() {
             <div className="w-full rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200/90 text-center shadow-lg shadow-amber-500/5">
               This application is currently pending verification from Google, which temporarily restricts new logins. If you would like to test the app, please{" "}
               <a
-                href="https://mail.google.com/mail/?view=cm&fs=1&to=nirajandhakal634@gmail.com&su=Access%20Request%20for%20AI%20Email%20Assistant&body=Hi%20Nirajan,%0A%0AI%20would%20like%20to%20test%20the%20AI%20Email%20Assistant%20app.%20Please%20grant%20me%20access.%0A%0AThanks!"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="mailto:nirajandhakal634@gmail.com"
+                onClick={handleContactClick}
                 className="font-medium text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors"
               >
                 contact the developer
