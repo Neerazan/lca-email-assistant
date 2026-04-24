@@ -73,7 +73,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               This makes the "notch" at the top-right corner — sender bubble style
             */}
             <div
-              className="text-slate-100 text-sm leading-relaxed px-4 py-2.5"
+              className="text-slate-100 text-sm leading-relaxed px-4 py-2.5 whitespace-pre-wrap"
               style={{ background: "#3d4263", borderRadius: "18px 4px 18px 18px" }}
             >
               {message.content}

@@ -413,15 +413,6 @@ export default function SettingsPage() {
               />
             </div>
 
-            <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <span className="text-xs text-slate-500 italic">This will permanently clear all facts learned by the AI.</span>
-              <button
-                onClick={() => setShowResetConfirm(true)}
-                className="cursor-pointer px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all text-xs font-semibold active:scale-[0.98]"
-              >
-                Reset AI Memory
-              </button>
-            </div>
           </div>
         </div>
         </section>
@@ -430,11 +421,21 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             <div>
               <h2 className="text-base font-semibold text-red-400">Danger Zone</h2>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">Permanently delete your account and all associated data.</p>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">Destructive actions like clearing memory or deleting your account entirely.</p>
             </div>
 
             <div className="md:col-span-2 space-y-6">
               <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <span className="text-xs text-slate-500 italic">This will permanently clear all facts learned by the AI.</span>
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  className="cursor-pointer px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all text-xs font-semibold active:scale-[0.98]"
+                >
+                  Reset AI Memory
+                </button>
+              </div>
+
+              <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <span className="text-xs text-slate-500 italic">All your preferences, chat history, and memory will be wiped.</span>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
