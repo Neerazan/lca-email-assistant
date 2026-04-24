@@ -27,6 +27,18 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-white/2 backdrop-blur-xl px-6 sm:px-10 py-10 sm:py-12 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
           <div className="flex flex-col items-center space-y-8">
 
+            <div className="w-full rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200/90 text-center shadow-lg shadow-amber-500/5">
+              This application is currently pending verification from Google, which temporarily restricts new logins. If you would like to test the app, please{" "}
+              <a
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=nirajandhakal634@gmail.com&su=Access%20Request%20for%20AI%20Email%20Assistant&body=Hi%20Nirajan,%0A%0AI%20would%20like%20to%20test%20the%20AI%20Email%20Assistant%20app.%20Please%20grant%20me%20access.%0A%0AThanks!"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors"
+              >
+                contact the developer
+              </a>.
+            </div>
+
             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center shadow-lg shadow-indigo-500/10 mb-1 overflow-hidden border border-white/10">
               <Image
                 src="/icon.png"
