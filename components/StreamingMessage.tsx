@@ -4,6 +4,23 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+const TOOL_MESSAGES: Record<string, string> = {
+  search_emails: "Searching your inbox...",
+  search_gmail: "Searching your inbox...",
+  get_email: "Reading email details...",
+  get_gmail_message: "Reading email details...",
+  get_thread: "Reading email thread...",
+  get_gmail_thread: "Reading email thread...",
+  send_email: "Sending email...",
+  create_draft: "Creating draft...",
+  save_memory_tool: "Saving to memory...",
+  delete_memory_tool: "Updating memory...",
+};
+
+function formatToolName(toolName: string): string {
+  return TOOL_MESSAGES[toolName] || `Using ${toolName.replace(/_/g, " ")}...`;
+}
+
 interface StreamingMessageProps {
   content: string;
   tool?: string | null;
@@ -32,7 +49,7 @@ export default function StreamingMessage({
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            Calling {tool}...
+            {formatToolName(tool)}
           </div>
         )}
 
